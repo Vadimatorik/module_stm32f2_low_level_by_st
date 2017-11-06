@@ -11,7 +11,7 @@
 
 // Структуры должны быть объявлены в extern "C" области или C файле.
 struct pin_cfg {
-    GPIO_TypeDef*               const GPIOx;
+    const GPIO_TypeDef*         const GPIOx;
     const GPIO_InitTypeDef      init;
 };
 
@@ -44,6 +44,8 @@ public:
 private:
     const uint32_t      count_cfg;
 };
+
+void gpio_clk_en (  const GPIO_TypeDef* const GPIOx );
 
 #endif
 

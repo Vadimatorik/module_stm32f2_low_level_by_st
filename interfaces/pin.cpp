@@ -1,6 +1,6 @@
 #include "pin.h"
 
-static void gpio_clk_en (  const GPIO_TypeDef* GPIOx, const uint32_t remap_mode ) {
+void gpio_clk_en (  const GPIO_TypeDef* GPIOx ) {
     switch ( (uint32_t)GPIOx ) {
 #ifdef GPIOA
         case GPIOA_BASE: __HAL_RCC_GPIOA_CLK_ENABLE(); break;
