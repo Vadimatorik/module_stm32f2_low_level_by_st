@@ -903,27 +903,9 @@ typedef struct
                                         tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_USART6EN);\
                                         UNUSED(tmpreg); \
                                         } while(0)
-#define __HAL_RCC_ADC1_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC1EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC1EN);\
-                                        UNUSED(tmpreg); \
-                                        } while(0)
-#define __HAL_RCC_ADC2_CLK_ENABLE()   do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC2EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC2EN);\
-                                        UNUSED(tmpreg); \
-                                        } while(0)
-#define __HAL_RCC_ADC3_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC3EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC3EN);\
-                                        UNUSED(tmpreg); \
-                                        } while(0) 
+#define __HAL_RCC_ADC1_CLK_ENABLE()     SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC1EN);
+#define __HAL_RCC_ADC2_CLK_ENABLE()     SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC2EN);
+#define __HAL_RCC_ADC3_CLK_ENABLE()     SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC3EN);
 #define __HAL_RCC_SDIO_CLK_ENABLE()     do { \
                                         __IO uint32_t tmpreg = 0x00U; \
                                         SET_BIT(RCC->APB2ENR, RCC_APB2ENR_SDIOEN);\
