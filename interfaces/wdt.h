@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mc_hardware_interfaces_wdt.h"
+#include "stm32f2xx_hal_conf.h"
 #include "user_os.h"
 
 struct wdt_cfg {
