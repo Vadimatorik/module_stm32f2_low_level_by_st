@@ -19,7 +19,7 @@ MODULE_STM32F2_LOW_LEVEL_BY_ST_OBJ_FILE				+= module_stm32f2_low_level_by_st/CMS
 build/obj/module_stm32f2_low_level_by_st/%.o:	module_stm32f2_low_level_by_st/%.c
 	@echo [CC] $<
 	@mkdir -p $(dir $@)
-	$(CC) $(C_FLAGS) $(DEFINE_PROJ) $(USER_CFG_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_OPTIMIZATION) -c $< -o $@
+	@$(CC) $(C_FLAGS) $(DEFINE_PROJ) $(USER_CFG_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_OPTIMIZATION) -c $< -o $@
 
 
 build/obj/module_stm32f2_low_level_by_st/%.o:	module_stm32f2_low_level_by_st/%.cpp
