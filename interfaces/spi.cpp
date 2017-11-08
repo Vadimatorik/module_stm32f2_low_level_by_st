@@ -1,4 +1,5 @@
 #include "spi.h"
+#include <string.h>
 
 SPI::BASE_RESULT  spi_master_8bit::reinit ( void ) const {
     if ( this->init_clk_spi() == false )    return SPI::BASE_RESULT::ERROR_INIT;      // Включаем тактирование SPI.
@@ -10,31 +11,155 @@ SPI::BASE_RESULT  spi_master_8bit::reinit ( void ) const {
 }
 
 void spi_master_8bit::on ( void ) const {
-
+    __HAL_SPI_ENABLE(&this->handle);
 }
 
 void spi_master_8bit::off  ( void ) const {
-
+    __HAL_SPI_DISABLE(&this->handle);
 }
 
 SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const uint16_t& length, const uint32_t& timeout_ms, const SPI::STEP_MODE step_mode  ) const {
-    (void)p_array_tx; (void)length; (void)timeout_ms; (void)step_mode;
-    return SPI::BASE_RESULT::OK;
+    (void)step_mode;
+
+    SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT ;
+    xSemaphoreTake ( this->semaphore, 0 );
+
+    if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
+        this->cfg->pin_cs->set( 0 );
+    }
+/*
+    if ( this->handle.hdmarx != nullptr ) {    // Если указан DMA на прием (чтобы писать поверх уже отправленных данных) - настраиваем DMA в такой режим.
+        this->dma_rx.start((void *)&this->handle.Instance->DR, p_array_tx, length);
+        SET_BIT(this->handle.Instance->CR2, SPI_CR2_RXDMAEN);
+    }
+*/
+    if ( this->handle.hdmatx != nullptr ) {
+        this->dma_tx.start( (void*)&this->handle.Instance->DR, (void*)p_array_tx, length);
+        SET_BIT(this->handle.Instance->CR2, SPI_CR2_TXDMAEN);
+    }
+
+    if ( xSemaphoreTake ( this->semaphore, timeout_ms ) == pdTRUE ) {
+            rv = SPI::BASE_RESULT::OK;
+    }
+
+    volatile uint32_t buf;
+    buf = this->handle.Instance->DR;
+    buf = this->handle.Instance->SR;
+    (void)buf;
+
+    if ( this->cfg->pin_cs != nullptr) {
+        this->cfg->pin_cs->set( 1 );
+    }
+
+    return rv;
 }
 
 SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms ) const {
-    (void)p_array_tx;(void)p_array_rx;(void)length ;(void)timeout_ms;
-    return SPI::BASE_RESULT::OK;
+
+
+    SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT ;
+    xSemaphoreTake ( this->semaphore, 0 );
+
+    if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
+        this->cfg->pin_cs->set( 0 );
+    }
+
+    if ( this->handle.hdmarx != nullptr ) {    // Если указан DMA на прием (чтобы писать поверх уже отправленных данных) - настраиваем DMA в такой режим.
+        this->dma_rx.start((void *)&this->handle.Instance->DR, p_array_rx, length);
+        SET_BIT(this->handle.Instance->CR2, SPI_CR2_RXDMAEN);
+    }
+
+    if ( this->handle.hdmatx != nullptr ) {
+        this->dma_tx.start( (void*)&this->handle.Instance->DR, (void*)p_array_tx, length);
+        SET_BIT(this->handle.Instance->CR2, SPI_CR2_TXDMAEN);
+    }
+
+    if ( xSemaphoreTake ( this->semaphore, timeout_ms ) == pdTRUE ) {
+            rv = SPI::BASE_RESULT::OK;
+    }
+
+    volatile uint32_t buf;
+    buf = this->handle.Instance->DR;
+    buf = this->handle.Instance->SR;
+    (void)buf;
+
+    if ( this->cfg->pin_cs != nullptr) {
+        this->cfg->pin_cs->set( 1 );
+    }
+
+    return rv;
 }
 
 SPI::BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const uint16_t count, const uint32_t timeout_ms ) const {
- (void)p_item_tx;(void)count;(void)timeout_ms;
+    SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT ;
+    xSemaphoreTake ( this->semaphore, 0 );
+
+    if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
+        this->cfg->pin_cs->set( 0 );
+    }
+
+    uint8_t p_array_tx[count];
+    memset(p_array_tx, p_item_tx, count);
+
+    if ( this->handle.hdmatx != nullptr ) {
+        this->dma_tx.start( (void*)&this->handle.Instance->DR, (void*)p_array_tx, count);
+        SET_BIT(this->handle.Instance->CR2, SPI_CR2_TXDMAEN);
+    }
+
+    if ( xSemaphoreTake ( this->semaphore, timeout_ms ) == pdTRUE ) {
+            rv = SPI::BASE_RESULT::OK;
+    }
+
+    volatile uint32_t buf;
+    buf = this->handle.Instance->DR;
+    buf = this->handle.Instance->SR;
+    (void)buf;
+
+    if ( this->cfg->pin_cs != nullptr) {
+        this->cfg->pin_cs->set( 1 );
+    }
+
+    return rv;
+
          return SPI::BASE_RESULT::OK;
 }
 
 SPI::BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value ) const {
 (void)p_array_rx;(void)length;(void)timeout_ms ;(void)out_value;
-         return SPI::BASE_RESULT::OK;
+    SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT ;
+    xSemaphoreTake ( this->semaphore, 0 );
+
+    if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
+        this->cfg->pin_cs->set( 0 );
+    }
+
+    if ( this->handle.hdmarx != nullptr ) {    // Если указан DMA на прием (чтобы писать поверх уже отправленных данных) - настраиваем DMA в такой режим.
+        this->dma_rx.start((void *)&this->handle.Instance->DR, p_array_rx, length);
+        SET_BIT(this->handle.Instance->CR2, SPI_CR2_RXDMAEN);
+    }
+
+    uint8_t p_array_tx[length];
+    memset(p_array_tx, out_value, length);
+
+    if ( this->handle.hdmatx != nullptr ) {
+        this->dma_tx.start( (void*)&this->handle.Instance->DR, (void*)p_array_tx, length);
+        SET_BIT(this->handle.Instance->CR2, SPI_CR2_TXDMAEN);
+    }
+
+    if ( xSemaphoreTake ( this->semaphore, timeout_ms ) == pdTRUE ) {
+            rv = SPI::BASE_RESULT::OK;
+    }
+
+    volatile uint32_t buf;
+    buf = this->handle.Instance->DR;
+    buf = this->handle.Instance->SR;
+    (void)buf;
+
+    if ( this->cfg->pin_cs != nullptr) {
+        this->cfg->pin_cs->set( 1 );
+    }
+
+    return rv;
 }
 
 /*******************************************************************************************************
