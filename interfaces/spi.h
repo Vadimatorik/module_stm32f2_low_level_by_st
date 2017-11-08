@@ -32,6 +32,7 @@ public:
     SPI::BASE_RESULT tx_one_item ( const uint8_t p_item_tx, const uint16_t count, const uint32_t timeout_ms ) const;
     SPI::BASE_RESULT rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value = 0xFF ) const;
 
+    void	handler ( void );
 private:
     bool    init_clk_spi        ( void ) const;            // Включаем тактирование SPI и DMA (если используется).
     bool    init_spi            ( void ) const;            // Инициализируем только SPI (считается, что он уже затактирован).

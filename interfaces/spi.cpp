@@ -53,6 +53,24 @@ SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const u
 
     return rv;
 }
+/*******************************************************************************************************
+ * Обработчики.
+ *******************************************************************************************************/
+void spi_master_8bit::handler ( void ) {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    if ( this->handle.hdmatx != nullptr ) {
+        this->dma_tx.handler();
+    }
+    if ( this->dma_rx.handler() == 1 ) {
+        CLEAR_BIT(this->handle.Instance->CR2, SPI_CR2_RXDMAEN );
+        CLEAR_BIT(this->handle.Instance->CR2, SPI_CR2_TXDMAEN );
+        if ( this->semaphore ) {
+            xSemaphoreGiveFromISR ( this->semaphore, &xHigherPriorityTaskWoken);
+            portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+        }
+    }
+}
+
 
 SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms ) const {
 
