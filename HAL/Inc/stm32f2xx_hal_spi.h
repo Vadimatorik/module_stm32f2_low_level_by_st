@@ -151,6 +151,8 @@ typedef struct __SPI_HandleTypeDef
 
   __IO uint32_t              ErrorCode;    /* SPI Error code */
 
+  void*                      obj;
+
 }SPI_HandleTypeDef;
 
 /**
@@ -248,7 +250,8 @@ typedef struct __SPI_HandleTypeDef
   */
 
 /** @defgroup SPI_MSB_LSB_transmission SPI MSB LSB Transmission 
-  * @{
+  * @{SE_RESULT set_prescaler ( uint32_t prescaler ) const {
+
   */
 #define SPI_FIRSTBIT_MSB                0x00000000U
 #define SPI_FIRSTBIT_LSB                SPI_CR1_LSBFIRST

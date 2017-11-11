@@ -3,7 +3,6 @@
 #include "user_os.h"
 #include "mc_hardware_interfaces_spi.h"
 #include "pin.h"
-#include "dma.h"
 #include "stm32f2xx_hal_spi.h"
 #include "stm32f2xx_hal_dma.h"
 
@@ -31,23 +30,28 @@ public:
     SPI::BASE_RESULT tx ( const uint8_t* const  p_array_tx, uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms ) const;
     SPI::BASE_RESULT tx_one_item ( const uint8_t p_item_tx, const uint16_t count, const uint32_t timeout_ms ) const;
     SPI::BASE_RESULT rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value = 0xFF ) const;
+    SPI::BASE_RESULT set_prescaler ( uint32_t prescaler ) const;
+
+    void    give_semaphore ( void );                        // Отдать симафор из прерывания (внутренняя функция.
 
     void	handler ( void );
+
 private:
+
+
+
     bool    init_clk_spi        ( void ) const;            // Включаем тактирование SPI и DMA (если используется).
     bool    init_spi            ( void ) const;            // Инициализируем только SPI (считается, что он уже затактирован).
-    bool    init_clk_dma        ( void ) const;
     bool    init_spi_irq        ( void ) const;            // Включаем нужные прерывания (по SPI (если нет DMA) иначе DMA).
-    bool    init_dma_irq        ( void ) const;
 
+    void    dma_clk_on ( DMA_Stream_TypeDef* dma) const;
+    void    dma_irq_on ( DMA_Stream_TypeDef* dma) const;
     uint8_t                             num_cfg;                   // Колличество структур переинициализации.
 
     mutable SPI_HandleTypeDef               handle;
     mutable USER_OS_STATIC_BIN_SEMAPHORE               semaphore        = nullptr;
     uint8_t                     runtime_flags    = 0;
-    dma                         dma_tx;
     mutable DMA_HandleTypeDef           hdma_tx;
-    dma                         dma_rx;
     mutable DMA_HandleTypeDef           hdma_rx;
 
     const spi_master_8bit_cfg* const cfg;

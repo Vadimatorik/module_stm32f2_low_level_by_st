@@ -16,6 +16,8 @@ spi_master_8bit::spi_master_8bit ( const spi_master_8bit_cfg* const cfg ) : cfg(
     this->handle.Init.CRCCalculation                    = SPI_CRCCALCULATION_DISABLED;
     this->handle.Init.CRCPolynomial                     = 0xFF;
 
+    this->handle.obj                                    = this;
+
     if ( cfg->dma_tx != nullptr ) {
         this->handle.hdmatx = &this->hdma_tx;
         this->handle.hdmatx->Instance					= this->cfg->dma_tx;
@@ -28,6 +30,9 @@ spi_master_8bit::spi_master_8bit ( const spi_master_8bit_cfg* const cfg ) : cfg(
         this->handle.hdmatx->Init.Mode					= DMA_NORMAL;
         this->handle.hdmatx->Init.Priority				= DMA_PRIORITY_HIGH;
         this->handle.hdmatx->Init.FIFOMode				= DMA_FIFOMODE_DISABLE;
+
+        this->handle.hdmatx                             = &this->hdma_tx;
+        this->handle.hdmatx->Parent                     = &this->handle;
     }
 
     if ( cfg->dma_rx != nullptr ) {
@@ -42,14 +47,16 @@ spi_master_8bit::spi_master_8bit ( const spi_master_8bit_cfg* const cfg ) : cfg(
         this->handle.hdmarx->Init.Mode					= DMA_NORMAL;
         this->handle.hdmarx->Init.Priority				= DMA_PRIORITY_HIGH;
         this->handle.hdmarx->Init.FIFOMode				= DMA_FIFOMODE_DISABLE;
+
+        this->handle.hdmarx                             = &this->hdma_rx;
+        this->handle.hdmarx->Parent                     = &this->handle;
     }
 }
 
 SPI::BASE_RESULT spi_master_8bit::reinit ( void ) const {
     if ( this->init_clk_spi() == false )    return SPI::BASE_RESULT::ERROR_INIT;      // Включаем тактирование SPI.
-    this->init_spi_irq();                                                             // Включаем IRQ SPI (если DMA не вызывается для используемого функционала).
-    this->init_dma_irq();                                                             // Включаем IRQ DMA, если DMA используется.
-    if ( this->init_clk_dma() == false )    return SPI::BASE_RESULT::ERROR_INIT;
+    //this->init_spi_irq();
+    // Включаем IRQ SPI (если DMA не вызывается для используемого функционала).
     if ( this->init_spi() == false )        return SPI::BASE_RESULT::ERROR_INIT;
     return SPI::BASE_RESULT::OK;
 }
@@ -73,18 +80,12 @@ SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const u
     }
 
     if ( this->handle.hdmatx != nullptr ) {
-        this->dma_tx.start( (void*)&this->handle.Instance->DR, (void*)p_array_tx, length);
-        SET_BIT(this->handle.Instance->CR2, SPI_CR2_TXDMAEN);
+        HAL_SPI_Transmit_DMA( &this->handle, (uint8_t*)p_array_tx,length);
     }
 
     if ( xSemaphoreTake ( this->semaphore, timeout_ms ) == pdTRUE ) {
             rv = SPI::BASE_RESULT::OK;
     }
-
-    volatile uint32_t buf;
-    buf = this->handle.Instance->DR;
-    buf = this->handle.Instance->SR;
-    (void)buf;
 
     if ( this->cfg->pin_cs != nullptr) {
         this->cfg->pin_cs->set( 1 );
@@ -96,49 +97,56 @@ SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const u
  * Обработчики.
  *******************************************************************************************************/
 void spi_master_8bit::handler ( void ) {
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    if ( this->handle.hdmatx != nullptr ) {
-        this->dma_tx.handler();
-    }
-    if ( this->dma_rx.handler() == 1 ) {
-        CLEAR_BIT(this->handle.Instance->CR2, SPI_CR2_RXDMAEN );
-        CLEAR_BIT(this->handle.Instance->CR2, SPI_CR2_TXDMAEN );
-        if ( this->semaphore ) {
-            xSemaphoreGiveFromISR ( this->semaphore, &xHigherPriorityTaskWoken);
-            portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
-        }
+    if ( this->handle.hdmatx != nullptr )
+        HAL_DMA_IRQHandler( &this->hdma_tx );
+
+    if ( this->handle.hdmarx != nullptr )
+        HAL_DMA_IRQHandler( &this->hdma_rx );
+}
+
+void spi_master_8bit::give_semaphore ( void ) {
+    if ( this->semaphore ) {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xSemaphoreGiveFromISR ( this->semaphore, &xHigherPriorityTaskWoken);
     }
 }
 
+extern "C" {
+
+void HAL_SPI_TxCpltCallback ( SPI_HandleTypeDef *hspi ) {
+     spi_master_8bit* o = ( spi_master_8bit* )hspi->obj;
+     o->give_semaphore();
+}
+
+void HAL_SPI_RxCpltCallback ( SPI_HandleTypeDef *hspi ) {
+     spi_master_8bit* o = ( spi_master_8bit* )hspi->obj;
+     o->give_semaphore();
+}
+
+void HAL_SPI_TxRxCpltCallback ( SPI_HandleTypeDef *hspi ) {
+     spi_master_8bit* o = ( spi_master_8bit* )hspi->obj;
+     o->give_semaphore();
+}
+
+}
 
 SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms ) const {
+     (void)p_array_tx; (void)length; (void)timeout_ms; (void)p_array_rx;
 
-
-    SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT ;
+    SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT;
     xSemaphoreTake ( this->semaphore, 0 );
 
     if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
         this->cfg->pin_cs->set( 0 );
     }
 
-    if ( this->handle.hdmarx != nullptr ) {    // Если указан DMA на прием (чтобы писать поверх уже отправленных данных) - настраиваем DMA в такой режим.
-        this->dma_rx.start((void *)&this->handle.Instance->DR, p_array_rx, length);
-        SET_BIT(this->handle.Instance->CR2, SPI_CR2_RXDMAEN);
-    }
-
-    if ( this->handle.hdmatx != nullptr ) {
-        this->dma_tx.start( (void*)&this->handle.Instance->DR, (void*)p_array_tx, length);
-        SET_BIT(this->handle.Instance->CR2, SPI_CR2_TXDMAEN);
+    if ( ( this->handle.hdmatx != nullptr ) && ( this->handle.hdmarx != nullptr ) ) {
+        HAL_SPI_TransmitReceive_DMA( &this->handle, (uint8_t*)p_array_tx, p_array_rx, length );
     }
 
     if ( xSemaphoreTake ( this->semaphore, timeout_ms ) == pdTRUE ) {
             rv = SPI::BASE_RESULT::OK;
     }
-
-    volatile uint32_t buf;
-    buf = this->handle.Instance->DR;
-    buf = this->handle.Instance->SR;
-    (void)buf;
 
     if ( this->cfg->pin_cs != nullptr) {
         this->cfg->pin_cs->set( 1 );
@@ -159,7 +167,7 @@ SPI::BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const u
     memset(p_array_tx, p_item_tx, count);
 
     if ( this->handle.hdmatx != nullptr ) {
-        this->dma_tx.start( ( void* )&this->handle.Instance->DR, p_array_tx, count);
+        HAL_SPI_Transmit_DMA( &this->handle,p_array_tx,count);
     }
 
     if ( xSemaphoreTake ( this->semaphore, timeout_ms ) == pdTRUE ) {
@@ -174,41 +182,35 @@ SPI::BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const u
 }
 
 SPI::BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value ) const {
-(void)p_array_rx;(void)length;(void)timeout_ms ;(void)out_value;
     SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT ;
     xSemaphoreTake ( this->semaphore, 0 );
 
-    if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
+    if ( this->cfg->pin_cs != nullptr )     // Опускаем CS (для того, чтобы "выбрать" устроство).
         this->cfg->pin_cs->set( 0 );
-    }
+
+    uint8_t tx_dummy[length];
+    memset( tx_dummy, out_value, length );
 
     if ( this->handle.hdmarx != nullptr ) {    // Если указан DMA на прием (чтобы писать поверх уже отправленных данных) - настраиваем DMA в такой режим.
-        this->dma_rx.start((void *)&this->handle.Instance->DR, p_array_rx, length);
-        SET_BIT(this->handle.Instance->CR2, SPI_CR2_RXDMAEN);
-    }
-
-    uint8_t p_array_tx[length];
-    memset(p_array_tx, out_value, length);
-
-    if ( this->handle.hdmatx != nullptr ) {
-        this->dma_tx.start( (void*)&this->handle.Instance->DR, (void*)p_array_tx, length);
-        SET_BIT(this->handle.Instance->CR2, SPI_CR2_TXDMAEN);
+        HAL_SPI_TransmitReceive_DMA( &this->handle, tx_dummy, p_array_rx, length );
     }
 
     if ( xSemaphoreTake ( this->semaphore, timeout_ms ) == pdTRUE ) {
             rv = SPI::BASE_RESULT::OK;
     }
 
-    volatile uint32_t buf;
-    buf = this->handle.Instance->DR;
-    buf = this->handle.Instance->SR;
-    (void)buf;
-
-    if ( this->cfg->pin_cs != nullptr) {
+    if ( this->cfg->pin_cs != nullptr)
         this->cfg->pin_cs->set( 1 );
-    }
+
 
     return rv;
+}
+
+
+SPI::BASE_RESULT spi_master_8bit::set_prescaler ( uint32_t prescaler ) const {
+    this->handle.Instance->CR1 &= ~( ( uint32_t )SPI_CR1_BR_Msk );
+    this->handle.Instance->CR1 |= prescaler;
+    return SPI::BASE_RESULT::OK;
 }
 
 /*******************************************************************************************************
@@ -242,23 +244,6 @@ bool spi_master_8bit::init_clk_spi () const {
     return true;
 }
 
-// Включаем тактирование DMA (если используется).
-bool spi_master_8bit::init_clk_dma ( void ) const {
-    bool result = false;
-    if (this->cfg->dma_tx != nullptr) {
-        this->dma_tx.rewrite_dma_handle(&this->hdma_tx);
-        this->dma_tx.clock_enable();
-        result = true;
-    }
-    if (this->cfg->dma_rx != nullptr) {
-        this->dma_rx.rewrite_dma_handle(&this->hdma_rx);
-        this->dma_rx.clock_enable();
-        result = true;
-    }
-    return result;
-}
-
-
 bool spi_master_8bit::init_spi_irq ( void ) const {
     // Если и TX и RX по DMA, то SPI прерывание не включается.
     if ((this->cfg->dma_tx != nullptr) && (this->cfg->dma_rx != nullptr)) {
@@ -290,29 +275,71 @@ bool spi_master_8bit::init_spi_irq ( void ) const {
     return true;
 }
 
-// Включаем прерывание канала DMA, если используется DMA.
-bool spi_master_8bit::init_dma_irq ( void ) const {
-    bool result = false;
-    if (this->cfg->dma_tx != nullptr) {
-        this->dma_tx.init_irq();                    // Включаем прерывание по выбранному каналу.
-        result = true;
-    }
-    if (this->cfg->dma_rx != nullptr) {
-        this->dma_rx.init_irq();                    // Включаем прерывание по выбранному каналу.
-        result = true;
-    }
-    return result;
+void spi_master_8bit::dma_clk_on ( DMA_Stream_TypeDef* dma) const {
+    switch ( (uint32_t)dma ) {
+    case DMA1_Stream0_BASE:
+    case DMA1_Stream1_BASE:
+    case DMA1_Stream2_BASE:
+    case DMA1_Stream3_BASE:
+    case DMA1_Stream4_BASE:
+    case DMA1_Stream5_BASE:
+    case DMA1_Stream6_BASE:
+    case DMA1_Stream7_BASE:
+        __HAL_RCC_DMA1_CLK_ENABLE();
+        break;
+    };
+
+    switch ( (uint32_t)dma ) {
+    case DMA2_Stream0_BASE:
+    case DMA2_Stream1_BASE:
+    case DMA2_Stream2_BASE:
+    case DMA2_Stream3_BASE:
+    case DMA2_Stream4_BASE:
+    case DMA2_Stream5_BASE:
+    case DMA2_Stream6_BASE:
+    case DMA2_Stream7_BASE:
+        __HAL_RCC_DMA2_CLK_ENABLE();
+        break;
+    };
 }
 
+void spi_master_8bit::dma_irq_on ( DMA_Stream_TypeDef* dma) const {
+    switch ( (uint32_t)dma ) {
+    case DMA1_Stream0_BASE: NVIC_SetPriority( DMA1_Stream0_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream0_IRQn ); break;
+    case DMA1_Stream1_BASE: NVIC_SetPriority( DMA1_Stream1_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream1_IRQn ); break;
+    case DMA1_Stream2_BASE: NVIC_SetPriority( DMA1_Stream2_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream2_IRQn ); break;
+    case DMA1_Stream3_BASE: NVIC_SetPriority( DMA1_Stream3_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream3_IRQn ); break;
+    case DMA1_Stream4_BASE: NVIC_SetPriority( DMA1_Stream4_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream4_IRQn ); break;
+    case DMA1_Stream5_BASE: NVIC_SetPriority( DMA1_Stream5_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream5_IRQn ); break;
+    case DMA1_Stream6_BASE: NVIC_SetPriority( DMA1_Stream6_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream6_IRQn ); break;
+    case DMA1_Stream7_BASE: NVIC_SetPriority( DMA1_Stream7_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream7_IRQn ); break;
+    };
+
+    switch ( (uint32_t)dma ) {
+    case DMA2_Stream0_BASE: NVIC_SetPriority( DMA2_Stream0_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream0_IRQn ); break;
+    case DMA2_Stream1_BASE: NVIC_SetPriority( DMA2_Stream1_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream1_IRQn ); break;
+    case DMA2_Stream2_BASE: NVIC_SetPriority( DMA2_Stream2_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream2_IRQn ); break;
+    case DMA2_Stream3_BASE: NVIC_SetPriority( DMA2_Stream3_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream3_IRQn ); break;
+    case DMA2_Stream4_BASE: NVIC_SetPriority( DMA2_Stream4_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream4_IRQn ); break;
+    case DMA2_Stream5_BASE: NVIC_SetPriority( DMA2_Stream5_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream5_IRQn ); break;
+    case DMA2_Stream6_BASE: NVIC_SetPriority( DMA2_Stream6_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream6_IRQn ); break;
+    case DMA2_Stream7_BASE: NVIC_SetPriority( DMA2_Stream7_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream7_IRQn ); break;
+    };
+}
+//
 bool spi_master_8bit::init_spi ( void ) const {
     HAL_SPI_Init ( &this->handle );
 
     if ( this->cfg->dma_tx != nullptr ) {
-        this->dma_tx.init();
+        this->dma_clk_on( this->cfg->dma_tx );
+        HAL_DMA_Init( &this->hdma_tx );
+        this->dma_irq_on( this->cfg->dma_tx );
     }
 
     if ( this->cfg->dma_rx != nullptr ) {
-        this->dma_rx.init();
+        this->dma_clk_on( this->cfg->dma_rx );
+        HAL_DMA_Init( &this->hdma_rx );
+        this->dma_irq_on( this->cfg->dma_rx );
     }
 
     if ( this->cfg->pin_cs != nullptr ) {
