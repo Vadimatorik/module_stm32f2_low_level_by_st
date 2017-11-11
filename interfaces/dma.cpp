@@ -1,18 +1,13 @@
 #include "dma.h"
 
-void dma::start ( void *dr, void *d, int l ) const{
+void dma::start ( void* src, void* dst, uint32_t l ) const {
     if (this->check_dma_handle() == false) return;                                    // Если структура не была указана - выходим.
-    __HAL_DMA_DISABLE(this->dma_handle);
-    this->dma_handle->Instance->NDTR        = l;
-    this->dma_handle->Instance->PAR            = (uint32_t)dr;
-    this->dma_handle->Instance->M0AR        = (uint32_t)d;
-    __HAL_DMA_ENABLE_IT(this->dma_handle, DMA_IT_TE);
-    __HAL_DMA_ENABLE_IT(this->dma_handle, DMA_IT_TC);
-    __HAL_DMA_ENABLE(this->dma_handle);
+    HAL_DMA_Start_IT( this->dma_handle, (uint32_t)src, (uint32_t)dst, l );
 }
 
 int dma::handler ( void )const {
     if (this->check_dma_handle() == false) return -1;                                        // Если структура не была указана - выходим.
+
     if(__HAL_DMA_GET_FLAG( this->dma_handle, __HAL_DMA_GET_TE_FLAG_INDEX(this->dma_handle))) {
         if(__HAL_DMA_GET_IT_SOURCE(this->dma_handle, DMA_IT_TE)) {
             __HAL_DMA_DISABLE_IT(this->dma_handle, DMA_IT_TE);

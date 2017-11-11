@@ -1,12 +1,56 @@
 #include "spi.h"
 #include <string.h>
 
-SPI::BASE_RESULT  spi_master_8bit::reinit ( void ) const {
-    if ( this->init_clk_spi() == false )    return SPI::BASE_RESULT::ERROR_INIT;      // Включаем тактирование SPI.
-    if ( this->init_spi() == false )        return SPI::BASE_RESULT::ERROR_INIT;      // Инициализируем UART (и DMA, внутри тактирование DMA включается).
-    this->init_spi_irq();                                      // Включаем IRQ SPI (если DMA не вызывается для используемого функционала).
-    this->init_dma_irq();                                      // Включаем IRQ DMA, если DMA используется.
+spi_master_8bit::spi_master_8bit ( const spi_master_8bit_cfg* const cfg ) : cfg( cfg ) {
+    this->handle.Instance                               = cfg->SPIx;
+    this->handle.Init.Mode                              = SPI_MODE_MASTER;
+    this->handle.Init.Direction                         = SPI_DIRECTION_2LINES;
+    this->handle.Init.DataSize                          = SPI_DATASIZE_8BIT;
+    this->handle.Init.CLKPolarity                       = cfg->clk_polarity;
+    this->handle.Init.CLKPhase                          = cfg->clk_phase;
+    this->handle.Init.BaudRatePrescaler                 = cfg->baud_rate_prescaler;
 
+    this->handle.Init.NSS                               = SPI_NSS_SOFT;
+    this->handle.Init.FirstBit                          = SPI_FIRSTBIT_MSB;
+    this->handle.Init.TIMode                            = SPI_TIMODE_DISABLED;
+    this->handle.Init.CRCCalculation                    = SPI_CRCCALCULATION_DISABLED;
+    this->handle.Init.CRCPolynomial                     = 0xFF;
+
+    if ( cfg->dma_tx != nullptr ) {
+        this->handle.hdmatx = &this->hdma_tx;
+        this->handle.hdmatx->Instance					= this->cfg->dma_tx;
+        this->handle.hdmatx->Init.Channel				= this->cfg->dma_tx_ch;
+        this->handle.hdmatx->Init.Direction				= DMA_MEMORY_TO_PERIPH;
+        this->handle.hdmatx->Init.PeriphInc				= DMA_PINC_DISABLE;
+        this->handle.hdmatx->Init.MemInc				= DMA_MINC_ENABLE;
+        this->handle.hdmatx->Init.PeriphDataAlignment	= DMA_PDATAALIGN_BYTE;
+        this->handle.hdmatx->Init.MemDataAlignment		= DMA_MDATAALIGN_BYTE;
+        this->handle.hdmatx->Init.Mode					= DMA_NORMAL;
+        this->handle.hdmatx->Init.Priority				= DMA_PRIORITY_HIGH;
+        this->handle.hdmatx->Init.FIFOMode				= DMA_FIFOMODE_DISABLE;
+    }
+
+    if ( cfg->dma_rx != nullptr ) {
+        this->handle.hdmarx = &this->hdma_rx;
+        this->handle.hdmarx->Instance					= this->cfg->dma_rx;
+        this->handle.hdmarx->Init.Channel				= this->cfg->dma_rx_ch;
+        this->handle.hdmarx->Init.Direction				= DMA_PERIPH_TO_MEMORY;
+        this->handle.hdmarx->Init.PeriphInc				= DMA_PINC_DISABLE;
+        this->handle.hdmarx->Init.MemInc				= DMA_MINC_ENABLE;
+        this->handle.hdmarx->Init.PeriphDataAlignment	= DMA_PDATAALIGN_BYTE;
+        this->handle.hdmarx->Init.MemDataAlignment		= DMA_MDATAALIGN_BYTE;
+        this->handle.hdmarx->Init.Mode					= DMA_NORMAL;
+        this->handle.hdmarx->Init.Priority				= DMA_PRIORITY_HIGH;
+        this->handle.hdmarx->Init.FIFOMode				= DMA_FIFOMODE_DISABLE;
+    }
+}
+
+SPI::BASE_RESULT spi_master_8bit::reinit ( void ) const {
+    if ( this->init_clk_spi() == false )    return SPI::BASE_RESULT::ERROR_INIT;      // Включаем тактирование SPI.
+    this->init_spi_irq();                                                             // Включаем IRQ SPI (если DMA не вызывается для используемого функционала).
+    this->init_dma_irq();                                                             // Включаем IRQ DMA, если DMA используется.
+    if ( this->init_clk_dma() == false )    return SPI::BASE_RESULT::ERROR_INIT;
+    if ( this->init_spi() == false )        return SPI::BASE_RESULT::ERROR_INIT;
     return SPI::BASE_RESULT::OK;
 }
 
@@ -27,12 +71,7 @@ SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const u
     if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
         this->cfg->pin_cs->set( 0 );
     }
-/*
-    if ( this->handle.hdmarx != nullptr ) {    // Если указан DMA на прием (чтобы писать поверх уже отправленных данных) - настраиваем DMA в такой режим.
-        this->dma_rx.start((void *)&this->handle.Instance->DR, p_array_tx, length);
-        SET_BIT(this->handle.Instance->CR2, SPI_CR2_RXDMAEN);
-    }
-*/
+
     if ( this->handle.hdmatx != nullptr ) {
         this->dma_tx.start( (void*)&this->handle.Instance->DR, (void*)p_array_tx, length);
         SET_BIT(this->handle.Instance->CR2, SPI_CR2_TXDMAEN);
@@ -120,26 +159,18 @@ SPI::BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const u
     memset(p_array_tx, p_item_tx, count);
 
     if ( this->handle.hdmatx != nullptr ) {
-        this->dma_tx.start( (void*)&this->handle.Instance->DR, (void*)p_array_tx, count);
-        SET_BIT(this->handle.Instance->CR2, SPI_CR2_TXDMAEN);
+        this->dma_tx.start( ( void* )&this->handle.Instance->DR, p_array_tx, count);
     }
 
     if ( xSemaphoreTake ( this->semaphore, timeout_ms ) == pdTRUE ) {
             rv = SPI::BASE_RESULT::OK;
     }
 
-    volatile uint32_t buf;
-    buf = this->handle.Instance->DR;
-    buf = this->handle.Instance->SR;
-    (void)buf;
-
     if ( this->cfg->pin_cs != nullptr) {
         this->cfg->pin_cs->set( 1 );
     }
 
     return rv;
-
-         return SPI::BASE_RESULT::OK;
 }
 
 SPI::BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value ) const {
@@ -274,62 +305,21 @@ bool spi_master_8bit::init_dma_irq ( void ) const {
 }
 
 bool spi_master_8bit::init_spi ( void ) const {
-    this->handle.Instance			= this->cfg->SPIx;
-    this->handle.Init.Mode			= SPI_MODE_MASTER;
-    this->handle.Init.Direction		= SPI_DIRECTION_2LINES;
-    this->handle.Init.DataSize		= SPI_DATASIZE_8BIT;
-    this->handle.Init.CLKPolarity   = this->cfg->clk_polarity;
-    this->handle.Init.CLKPhase      = this->cfg->clk_phase;
-    this->handle.Init.BaudRatePrescaler = this->cfg->baud_rate_prescaler;
-
-    this->handle.Init.NSS					= SPI_NSS_SOFT;
-    this->handle.Init.FirstBit				= SPI_FIRSTBIT_MSB;
-    this->handle.Init.TIMode				= SPI_TIMODE_DISABLED;
-    this->handle.Init.CRCCalculation		= SPI_CRCCALCULATION_DISABLED;
-    this->handle.Init.CRCPolynomial			= 0xFF;
-
     HAL_SPI_Init ( &this->handle );
 
-    if ( this->cfg->dma_tx != NULL ) {
-        this->handle.hdmatx = &this->hdma_tx;			// Указываем, что структура инициализации канала DMA находится внутри объекта SPI.
-        this->handle.hdmatx->Instance					= this->cfg->dma_tx;
-        this->handle.hdmatx->Init.Channel				= this->cfg->dma_tx_ch;
-        this->handle.hdmatx->Init.Direction				= DMA_MEMORY_TO_PERIPH;
-        this->handle.hdmatx->Init.PeriphInc				= DMA_PINC_DISABLE;
-        this->handle.hdmatx->Init.MemInc				= DMA_MINC_ENABLE;
-        this->handle.hdmatx->Init.PeriphDataAlignment	= DMA_PDATAALIGN_BYTE;
-        this->handle.hdmatx->Init.MemDataAlignment		= DMA_MDATAALIGN_BYTE;
-        this->handle.hdmatx->Init.Mode					= DMA_NORMAL;
-        this->handle.hdmatx->Init.Priority				= DMA_PRIORITY_HIGH;
-        this->handle.hdmatx->Init.FIFOMode				= DMA_FIFOMODE_DISABLE;
-        if ( this->init_clk_dma() == false )	return false;
+    if ( this->cfg->dma_tx != nullptr ) {
         this->dma_tx.init();
     }
 
-    if ( this->cfg->dma_rx != NULL ) {		// Нам не всегда нужно, чтобы RX затерал данные. Для тех случаев, когда мы только передаем!
-        this->handle.hdmarx = &this->hdma_rx;
-        this->handle.hdmarx->Instance					= this->cfg->dma_rx;
-        this->handle.hdmarx->Init.Channel				= this->cfg->dma_rx_ch;
-        this->handle.hdmarx->Init.Direction				= DMA_PERIPH_TO_MEMORY;
-        this->handle.hdmarx->Init.PeriphInc				= DMA_PINC_DISABLE;
-        this->handle.hdmarx->Init.MemInc				= DMA_MINC_ENABLE;
-        this->handle.hdmarx->Init.PeriphDataAlignment	= DMA_PDATAALIGN_BYTE;
-        this->handle.hdmarx->Init.MemDataAlignment		= DMA_MDATAALIGN_BYTE;
-        this->handle.hdmarx->Init.Mode					= DMA_NORMAL;
-        this->handle.hdmarx->Init.Priority				= DMA_PRIORITY_HIGH;
-        this->handle.hdmarx->Init.FIFOMode				= DMA_FIFOMODE_DISABLE;
-        if ( this->init_clk_dma() == false )	return false;
+    if ( this->cfg->dma_rx != nullptr ) {
         this->dma_rx.init();
     }
-
-    __HAL_SPI_ENABLE(&this->handle);
 
     if ( this->cfg->pin_cs != nullptr ) {
          this->cfg->pin_cs->set( 1 );
     }
 
-    this->semaphore = xSemaphoreCreateBinary ();
-    return true;
+    this->semaphore = xSemaphoreCreateBinary();
 
     return true;
 }

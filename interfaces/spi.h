@@ -23,7 +23,7 @@ struct spi_master_8bit_cfg {
 
 class spi_master_8bit : public spi_master_8bit_base {
 public:
-    spi_master_8bit( const spi_master_8bit_cfg* const cfg ) : cfg( cfg ) {}
+    spi_master_8bit( const spi_master_8bit_cfg* const cfg );
     SPI::BASE_RESULT  reinit ( void ) const;
     void on     ( void ) const;
     void off    ( void ) const;

@@ -6,9 +6,7 @@ public:
     dma( DMA_HandleTypeDef *dma_handle ): dma_handle( dma_handle ) {}
     dma( void ): dma_handle( nullptr ) {}                                     // На случай, когда изначально не известен адрес структуры конфигурации DMA.
 
-    // dr - data register в периферии (куда).
-    // d - данные в памяти (откуда).
-    void    start        ( void* dr, void* d, int l ) const;
+    void    start        ( void* src, void* dst, uint32_t l ) const;
 
     // 0 - idle, 1 - end of transfer, negative - error code (или не указана структура)
     int     handler      ( void ) const;          // Данный hendler должен вызываться в пользовательском
