@@ -16,18 +16,24 @@ void wdt::init ( void ) const {
 }
 
 void wdt::reset ( void ) const {
+	IWDG->KR = 0x5555;//ключ, разрешающий запись
+	IWDG->RLR = 40 * this->cfg->run_time_ms / 256;
+	IWDG->KR = 0xAAAA;//ключ, перезагружающий таймер
 
 }
 
+// Перезапуск таймера для сервисных операций
 void wdt::reset_service ( void ) const {
-
+	IWDG->KR = 0x5555;//ключ, разрешающий запись
+	IWDG->RLR = 40 * this->cfg->service_time_ms / 256;
+	IWDG->KR = 0xAAAA;//ключ, перезагружающий таймер
 }
 
 //**********************************************************************
 // Потоки.
 //**********************************************************************
 void wdt::task ( void* p_obj ) {
-    wdt* obj	=	(wdt *)p_obj;
+    wdt* obj = ( wdt * )p_obj;
     USER_OS_TICK_TYPE last_wake_time;
     const USER_OS_TICK_TYPE time_out = 10;
     last_wake_time = USER_OS_TASK_GET_TICK_COUNT();
