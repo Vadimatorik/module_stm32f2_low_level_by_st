@@ -46,7 +46,7 @@
 
 /* ###########################  Core Function Access  ########################### */
 /** \ingroup  CMSIS_Core_FunctionInterface
-    \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+    \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Access Functions
   @{
  */
 
@@ -75,7 +75,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __disable_irq(void)
 /**
   \brief   Get Control Register
   \details Returns the content of the Control Register.
-  \return               Control Register value
+  \return               Control value
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_CONTROL(void)
 {
@@ -89,7 +89,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_CONTROL(void)
 /**
   \brief   Set Control Register
   \details Writes the given value to the Control Register.
-  \param [in]    control  Control Register value to set
+  \param [in]    control  Control value to set
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_CONTROL(uint32_t control)
 {
@@ -100,7 +100,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_CONTROL(uint32_t c
 /**
   \brief   Get IPSR Register
   \details Returns the content of the IPSR Register.
-  \return               IPSR Register value
+  \return               IPSR value
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_IPSR(void)
 {
@@ -114,7 +114,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_IPSR(void)
 /**
   \brief   Get APSR Register
   \details Returns the content of the APSR Register.
-  \return               APSR Register value
+  \return               APSR value
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_APSR(void)
 {
@@ -129,7 +129,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_APSR(void)
   \brief   Get xPSR Register
   \details Returns the content of the xPSR Register.
 
-    \return               xPSR Register value
+    \return               xPSR value
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_xPSR(void)
 {
@@ -143,11 +143,11 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_xPSR(void)
 /**
   \brief   Get Process Stack Pointer
   \details Returns the current value of the Process Stack Pointer (PSP).
-  \return               PSP Register value
+  \return               PSP value
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_PSP(void)
 {
-  register uint32_t result;
+  uint32_t result;
 
   __ASM volatile ("MRS %0, psp\n"  : "=r" (result) );
   return(result);
@@ -168,11 +168,11 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_PSP(uint32_t topOf
 /**
   \brief   Get Main Stack Pointer
   \details Returns the current value of the Main Stack Pointer (MSP).
-  \return               MSP Register value
+  \return               MSP value
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_MSP(void)
 {
-  register uint32_t result;
+  uint32_t result;
 
   __ASM volatile ("MRS %0, msp\n" : "=r" (result) );
   return(result);
@@ -243,7 +243,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __disable_fault_irq(void
 /**
   \brief   Get Base Priority
   \details Returns the current value of the Base Priority register.
-  \return               Base Priority register value
+  \return               Base Priority value
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_BASEPRI(void)
 {
@@ -267,7 +267,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_BASEPRI(uint32_t v
 
 /**
   \brief   Set Base Priority with condition
-  \details Assigns the given value to the Base Priority register only if BASEPRI masking is disabled,
+  \details Assigns the given value to the Base Priority only if BASEPRI masking is disabled,
            or the new value increases the BASEPRI priority level.
   \param [in]    basePri  Base Priority value to set
  */
@@ -280,7 +280,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_BASEPRI_MAX(uint32
 /**
   \brief   Get Fault Mask
   \details Returns the current value of the Fault Mask register.
-  \return               Fault Mask register value
+  \return               Fault Mask value
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_FAULTMASK(void)
 {
@@ -309,7 +309,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_FAULTMASK(uint32_t
 /**
   \brief   Get FPSCR
   \details Returns the current value of the Floating Point Status/Control register.
-  \return               Floating Point Status/Control register value
+  \return               Floating Point Status/Control value
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_FPSCR(void)
 {
@@ -356,7 +356,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_FPSCR(uint32_t fps
 */
 
 /* Define macros for porting to both thumb1 and thumb2.
- * For thumb1, use low register (r0-r7), specified by constraint "l"
+ * For thumb1, use low (r0-r7), specified by constraint "l"
  * Otherwise, use general registers, specified by constraint "r" */
 #if defined (__thumb__) && !defined (__thumb2__)
 #define __CMSIS_GCC_OUT_REG(r) "=l" (r)
@@ -496,7 +496,7 @@ __attribute__((always_inline)) __STATIC_INLINE int32_t __REVSH(int32_t value)
 
 /**
   \brief   Rotate Right in unsigned value (32 bit)
-  \details Rotate Right (immediate) provides the value of the contents of a register rotated by a variable number of bits.
+  \details Rotate Right (immediate) provides the value of the contents of a rotated by a variable number of bits.
   \param [in]    value  Value to rotate
   \param [in]    value  Number of Bits to rotate
   \return               Rotated value
