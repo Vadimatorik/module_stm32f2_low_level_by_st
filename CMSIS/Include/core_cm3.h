@@ -1449,7 +1449,7 @@ __STATIC_INLINE uint32_t NVIC_GetPriorityGrouping(void)
   \details Enables a device-specific interrupt in the NVIC interrupt controller.
   \param [in]      IRQn  External interrupt number. Value cannot be negative.
  */
-__STATIC_INLINE void NVIC_EnableIRQ(IRQn_Type IRQn)
+__STATIC_INLINE void NVIC_EnableIRQ ( IRQn_Type IRQn )
 {
   NVIC->ISER[(((uint32_t)(int32_t)IRQn) >> 5UL)] = (uint32_t)(1UL << (((uint32_t)(int32_t)IRQn) & 0x1FUL));
 }
