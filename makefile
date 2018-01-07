@@ -36,3 +36,7 @@ build/obj/module_stm32f2_low_level_by_st/%.o:	module_stm32f2_low_level_by_st/%.s
 # Добавляем к общим переменным проекта.
 PROJECT_PATH			+= $(MODULE_STM32F2_LOW_LEVEL_BY_ST_PATH)
 PROJECT_OBJ_FILE		+= $(MODULE_STM32F2_LOW_LEVEL_BY_ST_OBJ_FILE)
+
+# Сохраняем пути в отдельную переменную, чтобы субмодуль заглушки мог знать, где брать 
+# файлы по типу stm32f205xx...
+PATH_USER_MC_LOW_LAVEL	:= $(MODULE_STM32F2_LOW_LEVEL_BY_ST_PATH)
