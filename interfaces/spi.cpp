@@ -73,7 +73,7 @@ SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const u
     (void)step_mode;
 
     SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT ;
-    xSemaphoreTake ( this->semaphore, 0 );
+    xSemaphoreTake ( this->s, 0 );
 
     if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
         this->cfg->pin_cs->set( 0 );
@@ -83,7 +83,7 @@ SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const u
         HAL_SPI_Transmit_DMA( &this->handle, (uint8_t*)p_array_tx,length);
     }
 
-    if ( xSemaphoreTake ( this->semaphore, timeout_ms ) == pdTRUE ) {
+    if ( xSemaphoreTake ( this->s, timeout_ms ) == pdTRUE ) {
             rv = SPI::BASE_RESULT::OK;
     }
 
@@ -105,9 +105,9 @@ void spi_master_8bit::handler ( void ) {
 }
 
 void spi_master_8bit::give_semaphore ( void ) {
-    if ( this->semaphore ) {
+    if ( this->s ) {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR ( this->semaphore, &xHigherPriorityTaskWoken);
+        xSemaphoreGiveFromISR ( this->s, &xHigherPriorityTaskWoken);
     }
 }
 
@@ -134,7 +134,7 @@ SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t
      (void)p_array_tx; (void)length; (void)timeout_ms; (void)p_array_rx;
 
     SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT;
-    xSemaphoreTake ( this->semaphore, 0 );
+    xSemaphoreTake ( this->s, 0 );
 
     if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
         this->cfg->pin_cs->set( 0 );
@@ -144,7 +144,7 @@ SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t
         HAL_SPI_TransmitReceive_DMA( &this->handle, (uint8_t*)p_array_tx, p_array_rx, length );
     }
 
-    if ( xSemaphoreTake ( this->semaphore, timeout_ms ) == pdTRUE ) {
+    if ( xSemaphoreTake ( this->s, timeout_ms ) == pdTRUE ) {
             rv = SPI::BASE_RESULT::OK;
     }
 
@@ -157,7 +157,7 @@ SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t
 
 SPI::BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const uint16_t count, const uint32_t timeout_ms ) const {
     SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT ;
-    xSemaphoreTake ( this->semaphore, 0 );
+    xSemaphoreTake ( this->s, 0 );
 
     if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
         this->cfg->pin_cs->set( 0 );
@@ -170,7 +170,7 @@ SPI::BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const u
         HAL_SPI_Transmit_DMA( &this->handle,p_array_tx,count);
     }
 
-    if ( xSemaphoreTake ( this->semaphore, timeout_ms ) == pdTRUE ) {
+    if ( xSemaphoreTake ( this->s, timeout_ms ) == pdTRUE ) {
             rv = SPI::BASE_RESULT::OK;
     }
 
@@ -183,7 +183,7 @@ SPI::BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const u
 
 SPI::BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value ) const {
     SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT ;
-    xSemaphoreTake ( this->semaphore, 0 );
+    xSemaphoreTake ( this->s, 0 );
 
     if ( this->cfg->pin_cs != nullptr )     // Опускаем CS (для того, чтобы "выбрать" устроство).
         this->cfg->pin_cs->set( 0 );
@@ -195,7 +195,7 @@ SPI::BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& leng
         HAL_SPI_TransmitReceive_DMA( &this->handle, tx_dummy, p_array_rx, length );
     }
 
-    if ( xSemaphoreTake ( this->semaphore, timeout_ms ) == pdTRUE ) {
+    if ( xSemaphoreTake ( this->s, timeout_ms ) == pdTRUE ) {
             rv = SPI::BASE_RESULT::OK;
     }
 
@@ -346,7 +346,7 @@ bool spi_master_8bit::init_spi ( void ) const {
          this->cfg->pin_cs->set( 1 );
     }
 
-    this->semaphore = xSemaphoreCreateBinary();
+    this->s = USER_OS_STATIC_BIN_SEMAPHORE_CREATE( &this->sb );
 
     return true;
 }

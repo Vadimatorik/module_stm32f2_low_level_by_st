@@ -32,27 +32,28 @@ public:
     SPI::BASE_RESULT rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value = 0xFF ) const;
     SPI::BASE_RESULT set_prescaler ( uint32_t prescaler ) const;
 
-    void    give_semaphore ( void );                        // Отдать симафор из прерывания (внутренняя функция.
+    void    give_semaphore ( void );                        						// Отдать симафор из прерывания (внутренняя функция.
 
     void	handler ( void );
 
 private:
-
-
-
-    bool    init_clk_spi        ( void ) const;            // Включаем тактирование SPI и DMA (если используется).
-    bool    init_spi            ( void ) const;            // Инициализируем только SPI (считается, что он уже затактирован).
-    bool    init_spi_irq        ( void ) const;            // Включаем нужные прерывания (по SPI (если нет DMA) иначе DMA).
+    bool    init_clk_spi        ( void ) const;            							// Включаем тактирование SPI и DMA (если используется).
+    bool    init_spi            ( void ) const;            							// Инициализируем только SPI (считается, что он уже затактирован).
+    bool    init_spi_irq        ( void ) const;            							// Включаем нужные прерывания (по SPI (если нет DMA) иначе DMA).
 
     void    dma_clk_on ( DMA_Stream_TypeDef* dma) const;
     void    dma_irq_on ( DMA_Stream_TypeDef* dma) const;
-    uint8_t                             num_cfg;                   // Колличество структур переинициализации.
 
-    mutable SPI_HandleTypeDef               handle;
-    mutable USER_OS_STATIC_BIN_SEMAPHORE               semaphore        = nullptr;
-    uint8_t                     runtime_flags    = 0;
-    mutable DMA_HandleTypeDef           hdma_tx;
-    mutable DMA_HandleTypeDef           hdma_rx;
+    uint8_t                             				num_cfg;                   	// Колличество структур переинициализации.
+
+    mutable SPI_HandleTypeDef               			handle;
+
+    mutable USER_OS_STATIC_BIN_SEMAPHORE_BUFFER     	sb;
+    mutable USER_OS_STATIC_BIN_SEMAPHORE				s = nullptr;
+
+    uint8_t												runtime_flags    = 0;
+    mutable DMA_HandleTypeDef							hdma_tx;
+    mutable DMA_HandleTypeDef							hdma_rx;
 
     const spi_master_8bit_cfg* const cfg;
 };
