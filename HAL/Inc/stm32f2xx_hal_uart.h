@@ -45,7 +45,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f2xx_hal_def.h"
-
+#include "stm32f2xx_hal_dma.h"
 /** @addtogroup STM32F2xx_HAL_Driver
   * @{
   */
@@ -190,6 +190,7 @@ typedef struct
   
   __IO uint32_t                 ErrorCode;        /*!< UART Error code                    */
 
+  void*							obj;			// Указатель на объект пользователя.
 }UART_HandleTypeDef;
 /**
   * @}

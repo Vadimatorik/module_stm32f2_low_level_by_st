@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dma.h"
 #include "user_os.h"
 #include "mc_hardware_interfaces_spi.h"
 #include "pin.h"
@@ -23,14 +24,14 @@ struct spi_master_8bit_cfg {
 class spi_master_8bit : public spi_master_8bit_base {
 public:
     spi_master_8bit( const spi_master_8bit_cfg* const cfg );
-    SPI::BASE_RESULT  reinit ( void ) const;
+    BASE_RESULT  reinit ( void ) const;
     void on     ( void ) const;
     void off    ( void ) const;
-    SPI::BASE_RESULT tx ( const uint8_t* const  p_array_tx, const uint16_t& length, const uint32_t& timeout_ms, const SPI::STEP_MODE step_mode = SPI::STEP_MODE::INC ) const;
-    SPI::BASE_RESULT tx ( const uint8_t* const  p_array_tx, uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms ) const;
-    SPI::BASE_RESULT tx_one_item ( const uint8_t p_item_tx, const uint16_t count, const uint32_t timeout_ms ) const;
-    SPI::BASE_RESULT rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value = 0xFF ) const;
-    SPI::BASE_RESULT set_prescaler ( uint32_t prescaler ) const;
+    BASE_RESULT tx ( const uint8_t* const  p_array_tx, const uint16_t& length, const uint32_t& timeout_ms, const SPI::STEP_MODE step_mode = SPI::STEP_MODE::INC ) const;
+    BASE_RESULT tx ( const uint8_t* const  p_array_tx, uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms ) const;
+    BASE_RESULT tx_one_item ( const uint8_t p_item_tx, const uint16_t count, const uint32_t timeout_ms ) const;
+    BASE_RESULT rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value = 0xFF ) const;
+    BASE_RESULT set_prescaler ( uint32_t prescaler ) const;
 
     void    give_semaphore ( void );                        						// Отдать симафор из прерывания (внутренняя функция.
 
@@ -40,9 +41,6 @@ private:
     bool    init_clk_spi        ( void ) const;            							// Включаем тактирование SPI и DMA (если используется).
     bool    init_spi            ( void ) const;            							// Инициализируем только SPI (считается, что он уже затактирован).
     bool    init_spi_irq        ( void ) const;            							// Включаем нужные прерывания (по SPI (если нет DMA) иначе DMA).
-
-    void    dma_clk_on ( DMA_Stream_TypeDef* dma) const;
-    void    dma_irq_on ( DMA_Stream_TypeDef* dma) const;
 
     uint8_t                             				num_cfg;                   	// Колличество структур переинициализации.
 

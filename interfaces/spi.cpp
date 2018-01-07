@@ -53,12 +53,12 @@ spi_master_8bit::spi_master_8bit ( const spi_master_8bit_cfg* const cfg ) : cfg(
     }
 }
 
-SPI::BASE_RESULT spi_master_8bit::reinit ( void ) const {
-    if ( this->init_clk_spi() == false )    return SPI::BASE_RESULT::ERROR_INIT;      // Включаем тактирование SPI.
+BASE_RESULT spi_master_8bit::reinit ( void ) const {
+    if ( this->init_clk_spi() == false )    return BASE_RESULT::ERROR_INIT;      // Включаем тактирование SPI.
     //this->init_spi_irq();
     // Включаем IRQ SPI (если DMA не вызывается для используемого функционала).
-    if ( this->init_spi() == false )        return SPI::BASE_RESULT::ERROR_INIT;
-    return SPI::BASE_RESULT::OK;
+    if ( this->init_spi() == false )        return BASE_RESULT::ERROR_INIT;
+    return BASE_RESULT::OK;
 }
 
 void spi_master_8bit::on ( void ) const {
@@ -69,10 +69,10 @@ void spi_master_8bit::off  ( void ) const {
     __HAL_SPI_DISABLE(&this->handle);
 }
 
-SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const uint16_t& length, const uint32_t& timeout_ms, const SPI::STEP_MODE step_mode  ) const {
+BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const uint16_t& length, const uint32_t& timeout_ms, const SPI::STEP_MODE step_mode  ) const {
     (void)step_mode;
 
-    SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT ;
+    BASE_RESULT rv = BASE_RESULT::TIME_OUT ;
     xSemaphoreTake ( this->s, 0 );
 
     if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
@@ -84,7 +84,7 @@ SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const u
     }
 
     if ( xSemaphoreTake ( this->s, timeout_ms ) == pdTRUE ) {
-            rv = SPI::BASE_RESULT::OK;
+            rv = BASE_RESULT::OK;
     }
 
     if ( this->cfg->pin_cs != nullptr) {
@@ -130,10 +130,10 @@ void HAL_SPI_TxRxCpltCallback ( SPI_HandleTypeDef *hspi ) {
 
 }
 
-SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms ) const {
+BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms ) const {
      (void)p_array_tx; (void)length; (void)timeout_ms; (void)p_array_rx;
 
-    SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT;
+    BASE_RESULT rv = BASE_RESULT::TIME_OUT;
     xSemaphoreTake ( this->s, 0 );
 
     if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
@@ -145,7 +145,7 @@ SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t
     }
 
     if ( xSemaphoreTake ( this->s, timeout_ms ) == pdTRUE ) {
-            rv = SPI::BASE_RESULT::OK;
+            rv = BASE_RESULT::OK;
     }
 
     if ( this->cfg->pin_cs != nullptr) {
@@ -155,8 +155,8 @@ SPI::BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t
     return rv;
 }
 
-SPI::BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const uint16_t count, const uint32_t timeout_ms ) const {
-    SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT ;
+BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const uint16_t count, const uint32_t timeout_ms ) const {
+    BASE_RESULT rv = BASE_RESULT::TIME_OUT ;
     xSemaphoreTake ( this->s, 0 );
 
     if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
@@ -171,7 +171,7 @@ SPI::BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const u
     }
 
     if ( xSemaphoreTake ( this->s, timeout_ms ) == pdTRUE ) {
-            rv = SPI::BASE_RESULT::OK;
+            rv = BASE_RESULT::OK;
     }
 
     if ( this->cfg->pin_cs != nullptr) {
@@ -181,8 +181,8 @@ SPI::BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const u
     return rv;
 }
 
-SPI::BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value ) const {
-    SPI::BASE_RESULT rv = SPI::BASE_RESULT::TIME_OUT ;
+BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value ) const {
+    BASE_RESULT rv = BASE_RESULT::TIME_OUT ;
     xSemaphoreTake ( this->s, 0 );
 
     if ( this->cfg->pin_cs != nullptr )     // Опускаем CS (для того, чтобы "выбрать" устроство).
@@ -196,7 +196,7 @@ SPI::BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& leng
     }
 
     if ( xSemaphoreTake ( this->s, timeout_ms ) == pdTRUE ) {
-            rv = SPI::BASE_RESULT::OK;
+            rv = BASE_RESULT::OK;
     }
 
     if ( this->cfg->pin_cs != nullptr)
@@ -207,10 +207,10 @@ SPI::BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& leng
 }
 
 
-SPI::BASE_RESULT spi_master_8bit::set_prescaler ( uint32_t prescaler ) const {
+BASE_RESULT spi_master_8bit::set_prescaler ( uint32_t prescaler ) const {
     this->handle.Instance->CR1 &= ~( ( uint32_t )SPI_CR1_BR_Msk );
     this->handle.Instance->CR1 |= prescaler;
-    return SPI::BASE_RESULT::OK;
+    return BASE_RESULT::OK;
 }
 
 /*******************************************************************************************************
@@ -275,71 +275,19 @@ bool spi_master_8bit::init_spi_irq ( void ) const {
     return true;
 }
 
-void spi_master_8bit::dma_clk_on ( DMA_Stream_TypeDef* dma) const {
-    switch ( (uint32_t)dma ) {
-    case DMA1_Stream0_BASE:
-    case DMA1_Stream1_BASE:
-    case DMA1_Stream2_BASE:
-    case DMA1_Stream3_BASE:
-    case DMA1_Stream4_BASE:
-    case DMA1_Stream5_BASE:
-    case DMA1_Stream6_BASE:
-    case DMA1_Stream7_BASE:
-        __HAL_RCC_DMA1_CLK_ENABLE();
-        break;
-    };
-
-    switch ( (uint32_t)dma ) {
-    case DMA2_Stream0_BASE:
-    case DMA2_Stream1_BASE:
-    case DMA2_Stream2_BASE:
-    case DMA2_Stream3_BASE:
-    case DMA2_Stream4_BASE:
-    case DMA2_Stream5_BASE:
-    case DMA2_Stream6_BASE:
-    case DMA2_Stream7_BASE:
-        __HAL_RCC_DMA2_CLK_ENABLE();
-        break;
-    };
-}
-
-void spi_master_8bit::dma_irq_on ( DMA_Stream_TypeDef* dma) const {
-    switch ( (uint32_t)dma ) {
-    case DMA1_Stream0_BASE: NVIC_SetPriority( DMA1_Stream0_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream0_IRQn ); break;
-    case DMA1_Stream1_BASE: NVIC_SetPriority( DMA1_Stream1_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream1_IRQn ); break;
-    case DMA1_Stream2_BASE: NVIC_SetPriority( DMA1_Stream2_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream2_IRQn ); break;
-    case DMA1_Stream3_BASE: NVIC_SetPriority( DMA1_Stream3_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream3_IRQn ); break;
-    case DMA1_Stream4_BASE: NVIC_SetPriority( DMA1_Stream4_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream4_IRQn ); break;
-    case DMA1_Stream5_BASE: NVIC_SetPriority( DMA1_Stream5_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream5_IRQn ); break;
-    case DMA1_Stream6_BASE: NVIC_SetPriority( DMA1_Stream6_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream6_IRQn ); break;
-    case DMA1_Stream7_BASE: NVIC_SetPriority( DMA1_Stream7_IRQn, 6 );    NVIC_EnableIRQ( DMA1_Stream7_IRQn ); break;
-    };
-
-    switch ( (uint32_t)dma ) {
-    case DMA2_Stream0_BASE: NVIC_SetPriority( DMA2_Stream0_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream0_IRQn ); break;
-    case DMA2_Stream1_BASE: NVIC_SetPriority( DMA2_Stream1_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream1_IRQn ); break;
-    case DMA2_Stream2_BASE: NVIC_SetPriority( DMA2_Stream2_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream2_IRQn ); break;
-    case DMA2_Stream3_BASE: NVIC_SetPriority( DMA2_Stream3_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream3_IRQn ); break;
-    case DMA2_Stream4_BASE: NVIC_SetPriority( DMA2_Stream4_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream4_IRQn ); break;
-    case DMA2_Stream5_BASE: NVIC_SetPriority( DMA2_Stream5_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream5_IRQn ); break;
-    case DMA2_Stream6_BASE: NVIC_SetPriority( DMA2_Stream6_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream6_IRQn ); break;
-    case DMA2_Stream7_BASE: NVIC_SetPriority( DMA2_Stream7_IRQn, 6 );    NVIC_EnableIRQ( DMA2_Stream7_IRQn ); break;
-    };
-}
-//
 bool spi_master_8bit::init_spi ( void ) const {
     HAL_SPI_Init ( &this->handle );
 
     if ( this->cfg->dma_tx != nullptr ) {
-        this->dma_clk_on( this->cfg->dma_tx );
+        dma_clk_on( this->cfg->dma_tx );
         HAL_DMA_Init( &this->hdma_tx );
-        this->dma_irq_on( this->cfg->dma_tx );
+        dma_irq_on( this->cfg->dma_tx );
     }
 
     if ( this->cfg->dma_rx != nullptr ) {
-        this->dma_clk_on( this->cfg->dma_rx );
+        dma_clk_on( this->cfg->dma_rx );
         HAL_DMA_Init( &this->hdma_rx );
-        this->dma_irq_on( this->cfg->dma_rx );
+        dma_irq_on( this->cfg->dma_rx );
     }
 
     if ( this->cfg->pin_cs != nullptr ) {
