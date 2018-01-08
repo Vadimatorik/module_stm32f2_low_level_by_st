@@ -54,4 +54,7 @@ private:
     mutable DMA_HandleTypeDef							hdma_rx;
 
     const spi_master_8bit_cfg* const cfg;
+
+    USER_OS_STATIC_MUTEX                    			m = nullptr;
+    USER_OS_STATIC_MUTEX_BUFFER             			mb;
 };

@@ -36,8 +36,10 @@ private:
     const uart_cfg*										const cfg;
     mutable DMA_HandleTypeDef							hdma_tx;
     mutable	UART_HandleTypeDef							handle;
-    mutable USER_OS_STATIC_BIN_SEMAPHORE_BUFFER     	sb;
     mutable USER_OS_STATIC_BIN_SEMAPHORE				s = nullptr;
+    mutable USER_OS_STATIC_MUTEX                    	m = nullptr;
+    mutable USER_OS_STATIC_BIN_SEMAPHORE_BUFFER     	sb;
+    mutable USER_OS_STATIC_MUTEX_BUFFER             	mb;
 };
 
 #endif

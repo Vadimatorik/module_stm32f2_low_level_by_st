@@ -31,6 +31,7 @@ uart::uart( const uart_cfg* const cfg ) : cfg(cfg) {
 	// Грязный хак. Сохраняем в структуру HAL-uart-а указатель на объект.
 	this->handle.obj = this;
 
+    this->m = USER_OS_STATIC_MUTEX_CREATE( &this->mb );
     this->s = USER_OS_STATIC_BIN_SEMAPHORE_CREATE( &this->sb );
 }
 
@@ -55,6 +56,8 @@ void uart::off ( void ) const {
 }
 
 BASE_RESULT uart::tx ( const uint8_t* const  p_array_tx, const uint16_t& length, const uint32_t& timeout_ms ) const {
+    if ( this->m != nullptr)			USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
+
 	xSemaphoreTake ( this->s, 0 );
 
 	if ( cfg->dma_tx != nullptr ) {												// Если передача идет по DMA.
@@ -68,6 +71,7 @@ BASE_RESULT uart::tx ( const uint8_t* const  p_array_tx, const uint16_t& length,
 		rv = BASE_RESULT::OK;
 	}
 
+    if ( this->m != nullptr)				USER_OS_GIVE_MUTEX( this->m );
 	return rv;
 }
 

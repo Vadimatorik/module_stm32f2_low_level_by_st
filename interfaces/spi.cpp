@@ -51,6 +51,9 @@ spi_master_8bit::spi_master_8bit ( const spi_master_8bit_cfg* const cfg ) : cfg(
         this->handle.hdmarx                             = &this->hdma_rx;
         this->handle.hdmarx->Parent                     = &this->handle;
     }
+
+    this->m = USER_OS_STATIC_MUTEX_CREATE( &mb );
+    this->s = USER_OS_STATIC_BIN_SEMAPHORE_CREATE( &this->sb );
 }
 
 BASE_RESULT spi_master_8bit::reinit ( void ) const {
@@ -72,12 +75,12 @@ void spi_master_8bit::off  ( void ) const {
 BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const uint16_t& length, const uint32_t& timeout_ms, const SPI::STEP_MODE step_mode  ) const {
     (void)step_mode;
 
+    if ( this->m != nullptr)			USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
+
     BASE_RESULT rv = BASE_RESULT::TIME_OUT ;
     xSemaphoreTake ( this->s, 0 );
 
-    if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
-        this->cfg->pin_cs->set( 0 );
-    }
+    if ( this->cfg->pin_cs != nullptr )		this->cfg->pin_cs->set( 0 );
 
     if ( this->handle.hdmatx != nullptr ) {
         HAL_SPI_Transmit_DMA( &this->handle, (uint8_t*)p_array_tx,length);
@@ -87,10 +90,8 @@ BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const uint16
             rv = BASE_RESULT::OK;
     }
 
-    if ( this->cfg->pin_cs != nullptr) {
-        this->cfg->pin_cs->set( 1 );
-    }
-
+    if ( this->cfg->pin_cs != nullptr)		this->cfg->pin_cs->set( 1 );
+    if ( this->m != nullptr)				USER_OS_GIVE_MUTEX( this->m );
     return rv;
 }
 /*******************************************************************************************************
@@ -131,14 +132,12 @@ void HAL_SPI_TxRxCpltCallback ( SPI_HandleTypeDef *hspi ) {
 }
 
 BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms ) const {
-     (void)p_array_tx; (void)length; (void)timeout_ms; (void)p_array_rx;
+    if ( this->m != nullptr)			USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
 
     BASE_RESULT rv = BASE_RESULT::TIME_OUT;
     xSemaphoreTake ( this->s, 0 );
 
-    if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
-        this->cfg->pin_cs->set( 0 );
-    }
+    if ( this->cfg->pin_cs != nullptr )	this->cfg->pin_cs->set( 0 );
 
     if ( ( this->handle.hdmatx != nullptr ) && ( this->handle.hdmarx != nullptr ) ) {
         HAL_SPI_TransmitReceive_DMA( &this->handle, (uint8_t*)p_array_tx, p_array_rx, length );
@@ -148,20 +147,18 @@ BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t* p_a
             rv = BASE_RESULT::OK;
     }
 
-    if ( this->cfg->pin_cs != nullptr) {
-        this->cfg->pin_cs->set( 1 );
-    }
-
+    if ( this->cfg->pin_cs != nullptr)	this->cfg->pin_cs->set( 1 );
+    if ( this->m != nullptr)			USER_OS_GIVE_MUTEX( this->m );
     return rv;
 }
 
 BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const uint16_t count, const uint32_t timeout_ms ) const {
+	if ( this->m != nullptr)			USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
+
     BASE_RESULT rv = BASE_RESULT::TIME_OUT ;
     xSemaphoreTake ( this->s, 0 );
 
-    if ( this->cfg->pin_cs != nullptr ) {    // Опускаем CS (для того, чтобы "выбрать" устроство).
-        this->cfg->pin_cs->set( 0 );
-    }
+    if ( this->cfg->pin_cs != nullptr )	this->cfg->pin_cs->set( 0 );
 
     uint8_t p_array_tx[count];
     memset(p_array_tx, p_item_tx, count);
@@ -174,14 +171,14 @@ BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const uint16
             rv = BASE_RESULT::OK;
     }
 
-    if ( this->cfg->pin_cs != nullptr) {
-        this->cfg->pin_cs->set( 1 );
-    }
-
+    if ( this->cfg->pin_cs != nullptr)	this->cfg->pin_cs->set( 1 );
+    if ( this->m != nullptr)			USER_OS_GIVE_MUTEX( this->m );
     return rv;
 }
 
 BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value ) const {
+	if ( this->m != nullptr)		USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
+
     BASE_RESULT rv = BASE_RESULT::TIME_OUT ;
     xSemaphoreTake ( this->s, 0 );
 
@@ -199,10 +196,8 @@ BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& length, c
             rv = BASE_RESULT::OK;
     }
 
-    if ( this->cfg->pin_cs != nullptr)
-        this->cfg->pin_cs->set( 1 );
-
-
+    if ( this->cfg->pin_cs != nullptr)	this->cfg->pin_cs->set( 1 );
+    if ( this->m != nullptr)			USER_OS_GIVE_MUTEX( this->m );
     return rv;
 }
 
@@ -290,11 +285,6 @@ bool spi_master_8bit::init_spi ( void ) const {
         dma_irq_on( this->cfg->dma_rx );
     }
 
-    if ( this->cfg->pin_cs != nullptr ) {
-         this->cfg->pin_cs->set( 1 );
-    }
-
-    this->s = USER_OS_STATIC_BIN_SEMAPHORE_CREATE( &this->sb );
-
+    if ( this->cfg->pin_cs != nullptr )		this->cfg->pin_cs->set( 1 );
     return true;
 }
