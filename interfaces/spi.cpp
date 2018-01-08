@@ -203,8 +203,11 @@ BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& length, c
 
 
 BASE_RESULT spi_master_8bit::set_prescaler ( uint32_t prescaler ) const {
+	if ( this->m != nullptr)			USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
     this->handle.Instance->CR1 &= ~( ( uint32_t )SPI_CR1_BR_Msk );
     this->handle.Instance->CR1 |= prescaler;
+    if ( this->m != nullptr)			USER_OS_GIVE_MUTEX( this->m );
+
     return BASE_RESULT::OK;
 }
 
@@ -246,25 +249,25 @@ bool spi_master_8bit::init_spi_irq ( void ) const {
     }
     switch ((uint32_t)this->cfg->SPIx)    {
 #ifdef SPI
-        case    SPI_BASE:    NVIC_SetPriority(SPI_IRQn, 5);    NVIC_EnableIRQ(SPI_IRQn);    break;
+        case    SPI_BASE:    NVIC_SetPriority(SPI_IRQn, 6);    NVIC_EnableIRQ(SPI_IRQn);    break;
 #endif
 #ifdef SPI1
-        case    SPI1_BASE:    NVIC_SetPriority(SPI1_IRQn, 5);    NVIC_EnableIRQ(SPI1_IRQn);    break;
+        case    SPI1_BASE:    NVIC_SetPriority(SPI1_IRQn, 6);    NVIC_EnableIRQ(SPI1_IRQn);    break;
 #endif
 #ifdef SPI2
-        case    SPI2_BASE:    NVIC_SetPriority(SPI2_IRQn, 5);    NVIC_EnableIRQ(SPI2_IRQn);    break;
+        case    SPI2_BASE:    NVIC_SetPriority(SPI2_IRQn, 6);    NVIC_EnableIRQ(SPI2_IRQn);    break;
 #endif
 #ifdef SPI3
-        case    SPI3_BASE:    NVIC_SetPriority(SPI3_IRQn, 5);    NVIC_EnableIRQ(SPI3_IRQn);    break;
+        case    SPI3_BASE:    NVIC_SetPriority(SPI3_IRQn, 6);    NVIC_EnableIRQ(SPI3_IRQn);    break;
 #endif
 #ifdef SPI4
-        case    SPI4_BASE:    NVIC_SetPriority(SPI4_IRQn, 5);    NVIC_EnableIRQ(SPI4_IRQn);    break;
+        case    SPI4_BASE:    NVIC_SetPriority(SPI4_IRQn, 6);    NVIC_EnableIRQ(SPI4_IRQn);    break;
 #endif
 #ifdef SPI5
-        case    SPI5_BASE:    NVIC_SetPriority(SPI5_IRQn, 5);    NVIC_EnableIRQ(SPI5_IRQn);    break;
+        case    SPI5_BASE:    NVIC_SetPriority(SPI5_IRQn, 6);    NVIC_EnableIRQ(SPI5_IRQn);    break;
 #endif
 #ifdef SPI6
-        case    SPI6_BASE:    NVIC_SetPriority(SPI6_IRQn, 5);    NVIC_EnableIRQ(SPI6_IRQn);    break;
+        case    SPI6_BASE:    NVIC_SetPriority(SPI6_IRQn, 6);    NVIC_EnableIRQ(SPI6_IRQn);    break;
 #endif
 };
     return true;
