@@ -87,7 +87,7 @@ BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const uint16
     }
 
     if ( xSemaphoreTake ( this->s, timeout_ms ) == pdTRUE ) {
-            rv = BASE_RESULT::OK;
+    	rv = BASE_RESULT::OK;
     }
 
     if ( this->cfg->pin_cs != nullptr)		this->cfg->pin_cs->set( 1 );
