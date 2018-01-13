@@ -274,6 +274,7 @@ bool spi_master_8bit::init_spi_irq ( void ) const {
 }
 
 bool spi_master_8bit::init_spi ( void ) const {
+	HAL_SPI_DeInit( &this->handle );
     HAL_SPI_Init ( &this->handle );
 
     if ( this->cfg->dma_tx != nullptr ) {
