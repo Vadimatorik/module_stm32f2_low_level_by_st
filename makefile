@@ -1,5 +1,5 @@
-ifndef MODULE_STM32F2_LOW_LEVEL_BY_ST_OPTIMIZATION
-	MODULE_STM32F2_LOW_LEVEL_BY_ST_OPTIMIZATION = -g3 -O0
+ifndef MODULE_STM32_F2_API_OPTIMIZATION
+	MODULE_STM32_F2_API_OPTIMIZATION = -g3 -O0
 endif
 
 MODULE_STM32F2_LOW_LEVEL_BY_ST_C_FILE				:= $(shell find module_stm32f2_low_level_by_st/ -maxdepth 10 -type f -name "*.c" )
@@ -19,18 +19,18 @@ MODULE_STM32F2_LOW_LEVEL_BY_ST_OBJ_FILE				+= module_stm32f2_low_level_by_st/CMS
 build/obj/module_stm32f2_low_level_by_st/%.o:	module_stm32f2_low_level_by_st/%.c
 	@echo [CC] $<
 	@mkdir -p $(dir $@)
-	@$(CC) $(C_FLAGS) $(DEFINE_PROJ) $(USER_CFG_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_OPTIMIZATION) -c $< -o $@
+	@$(CC) $(C_FLAGS) $(DEFINE_PROJ) $(USER_CFG_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_PATH) $(MODULE_STM32_F2_API_OPTIMIZATION) -c $< -o $@
 
 
 build/obj/module_stm32f2_low_level_by_st/%.o:	module_stm32f2_low_level_by_st/%.cpp
 	@echo [CPP] $<
 	@mkdir -p $(dir $@)
-	@$(CPP) $(CPP_FLAGS) $(DEFINE_PROJ) $(USER_CFG_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_OPTIMIZATION) -c $< -o $@
+	@$(CPP) $(CPP_FLAGS) $(DEFINE_PROJ) $(USER_CFG_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_PATH) $(MODULE_STM32_F2_API_OPTIMIZATION) -c $< -o $@
 
 build/obj/module_stm32f2_low_level_by_st/%.o:	module_stm32f2_low_level_by_st/%.s
 	@echo [AS] $<
 	@mkdir -p $(dir $@)
-	@$(AS) $(DEFINE_PROJ) $(USER_CFG_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_PATH)  $(MODULE_STM32F2_LOW_LEVEL_BY_ST_OPTIMIZATION) -c $< -o $@
+	@$(AS) $(DEFINE_PROJ) $(USER_CFG_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_PATH)  $(MODULE_STM32_F2_API_OPTIMIZATION) -c $< -o $@
 
 
 # Добавляем к общим переменным проекта.
