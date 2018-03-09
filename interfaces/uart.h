@@ -2,10 +2,9 @@
 
 #ifdef __cplusplus
 
-#include "mc_hardware_interfaces_uart.h"
-#include "stm32f2xx_hal_uart.h"
-#include "stm32f2xx_hal_rcc.h"
 #include "dma.h"
+#include "mc_hardware_interfaces_uart.h"
+#include "stm32f2xx_hal_conf.h"
 #include "user_os.h"
 
 struct uart_cfg {
@@ -30,6 +29,7 @@ public:
     void			irq_handler				( void ) const;
 
     void			give_semaphore			( void ) const;
+
 private:
     bool 			init_clk	 			( void ) const;
 
