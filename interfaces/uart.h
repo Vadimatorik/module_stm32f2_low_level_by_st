@@ -13,12 +13,13 @@ struct uart_cfg {
 	uint32_t					mode;							// UART_MODE_RX/UART_MODE_TX/UART_MODE_TX_RX.
     DMA_Stream_TypeDef*         dma_tx;                         // Из мерии DMAx_Streamx.
     uint32_t                    dma_tx_ch;                      // Из серии DMA_CHANNEL_x.
+	uint8_t						handler_prio;					// 1, 2..15.
 };
 
 class uart : public uart_base {
 public:
 	uart( const uart_cfg* const cfg );
-	void 			reinit		( void ) const;
+	bool 			reinit		( void ) const;
 
 	void 			on     		( void ) const;
 	void 			off    		( void ) const;

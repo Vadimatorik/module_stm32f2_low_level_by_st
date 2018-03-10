@@ -274,19 +274,24 @@ bool spi_master_8bit::init_spi_irq ( void ) const {
 }
 
 bool spi_master_8bit::init_spi ( void ) const {
+	HAL_StatusTypeDef r;
+
 	HAL_SPI_DeInit( &this->handle );
-    HAL_SPI_Init ( &this->handle );
+	r = HAL_SPI_Init ( &this->handle );
+	if ( r != HAL_OK ) return false;
 
     if ( this->cfg->dma_tx != nullptr ) {
         dma_clk_on( this->cfg->dma_tx );
-        HAL_DMA_Init( &this->hdma_tx );
-        dma_irq_on( this->cfg->dma_tx );
+		r = HAL_DMA_Init( &this->hdma_tx );
+		if ( r != HAL_OK ) return false;
+		dma_irq_on( this->cfg->dma_tx, this->cfg->handler_prio );
     }
 
     if ( this->cfg->dma_rx != nullptr ) {
         dma_clk_on( this->cfg->dma_rx );
-        HAL_DMA_Init( &this->hdma_rx );
-        dma_irq_on( this->cfg->dma_rx );
+		r = HAL_DMA_Init( &this->hdma_rx );
+		if ( r != HAL_OK ) return false;
+		dma_irq_on( this->cfg->dma_rx, this->cfg->handler_prio );
     }
 
     if ( this->cfg->pin_cs != nullptr )		this->cfg->pin_cs->set( 1 );

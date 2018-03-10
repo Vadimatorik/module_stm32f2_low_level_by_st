@@ -19,6 +19,8 @@ struct spi_master_8bit_cfg {
     DMA_Stream_TypeDef*         dma_rx;                         // Из мерии DMAx_Streamx.
     uint32_t                    dma_tx_ch;                      // Из серии DMA_CHANNEL_x.
     uint32_t                    dma_rx_ch;                      // Из серии DMA_CHANNEL_x.
+
+	uint8_t						handler_prio;					// 1, 2..15.
 };
 
 class spi_master_8bit : public spi_master_8bit_base {

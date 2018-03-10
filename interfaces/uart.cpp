@@ -35,16 +35,23 @@ uart::uart( const uart_cfg* const cfg ) : cfg(cfg) {
     this->s = USER_OS_STATIC_BIN_SEMAPHORE_CREATE( &this->sb );
 }
 
-void uart::reinit ( void ) const {
+bool uart::reinit ( void ) const {
 	init_clk();
 
 	if ( cfg->dma_tx != nullptr ) {
 		dma_clk_on( this->cfg->dma_tx );
-		dma_irq_on( this->cfg->dma_tx );
+		dma_irq_on( this->cfg->dma_tx, this->cfg->handler_prio );
 	}
 
 	HAL_UART_DeInit( &this->handle );
-	HAL_UART_Init( &this->handle );
+
+	HAL_StatusTypeDef r;
+	r = HAL_UART_Init( &this->handle );
+	if ( r == HAL_OK ) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 void uart::on ( void ) const {
@@ -58,7 +65,7 @@ void uart::off ( void ) const {
 BASE_RESULT uart::tx ( const uint8_t* const  p_array_tx, const uint16_t& length, const uint32_t& timeout_ms ) const {
     if ( this->m != nullptr)			USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
 
-	xSemaphoreTake ( this->s, 0 );
+	USER_OS_TAKE_BIN_SEMAPHORE ( this->s, 0 );
 
 	if ( cfg->dma_tx != nullptr ) {												// Если передача идет по DMA.
 		HAL_UART_Transmit_DMA( &this->handle, (uint8_t*)p_array_tx, length );
@@ -67,7 +74,7 @@ BASE_RESULT uart::tx ( const uint8_t* const  p_array_tx, const uint16_t& length,
 	}
 
 	volatile BASE_RESULT rv = BASE_RESULT::TIME_OUT;
-	if ( xSemaphoreTake ( this->s, timeout_ms ) == pdTRUE ) {
+	if ( USER_OS_TAKE_BIN_SEMAPHORE ( this->s, timeout_ms ) == pdTRUE ) {
 		rv = BASE_RESULT::OK;
 	}
 
@@ -92,7 +99,7 @@ void HAL_UART_TxCpltCallback( UART_HandleTypeDef *huart ) {
 void uart::give_semaphore ( void ) const {
     if ( this->s ) {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR ( this->s, &xHigherPriorityTaskWoken);
+		USER_OS_GIVE_BIN_SEMAPHORE_FROM_ISR ( this->s, &xHigherPriorityTaskWoken);
     }
 }
 
