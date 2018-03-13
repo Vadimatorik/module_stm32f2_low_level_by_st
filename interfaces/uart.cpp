@@ -43,15 +43,14 @@ bool uart::reinit ( void ) const {
 		dma_irq_on( this->cfg->dma_tx, this->cfg->handler_prio );
 	}
 
-	HAL_UART_DeInit( &this->handle );
-
 	HAL_StatusTypeDef r;
+	r = HAL_UART_DeInit( &this->handle );
+	if ( r != HAL_OK ) return false;
+
 	r = HAL_UART_Init( &this->handle );
-	if ( r == HAL_OK ) {
-		return true;
-	} else {
-		return false;
-	}
+	if ( r != HAL_OK ) return false;
+
+	return true;
 }
 
 void uart::on ( void ) const {
