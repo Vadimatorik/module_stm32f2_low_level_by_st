@@ -215,6 +215,8 @@ BASE_RESULT spi_master_8bit::set_prescaler ( uint32_t prescaler ) const {
  * Прикладные функции.
  *******************************************************************************************************/
 // Включаем тактирование SPI.
+
+extern "C" {
 bool spi_master_8bit::init_clk_spi () const {
     switch ((uint32_t)this->cfg->SPIx) {
 #ifdef SPI
@@ -271,6 +273,8 @@ bool spi_master_8bit::init_spi_irq ( void ) const {
 #endif
 };
     return true;
+}
+
 }
 
 bool spi_master_8bit::init_spi ( void ) const {

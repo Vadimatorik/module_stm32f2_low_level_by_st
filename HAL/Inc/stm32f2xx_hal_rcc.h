@@ -424,60 +424,28 @@ typedef struct
   * @{
   */
 #define __HAL_RCC_GPIOA_CLK_ENABLE()  do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOAEN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOAEN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOAEN);\
                                         } while(0)
 #define __HAL_RCC_GPIOB_CLK_ENABLE()  do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOBEN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOBEN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOBEN);\
                                         } while(0)
 #define __HAL_RCC_GPIOC_CLK_ENABLE()  do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOCEN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOCEN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOCEN);\
                                         } while(0)
 #define __HAL_RCC_GPIOD_CLK_ENABLE()  do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIODEN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIODEN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIODEN);\
                                         } while(0)
 #define __HAL_RCC_GPIOE_CLK_ENABLE()  do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOEEN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOEEN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOEEN);\
                                         } while(0)
 #define __HAL_RCC_GPIOF_CLK_ENABLE()   do { \
-                                       __IO uint32_t tmpreg = 0x00U; \
-                                       SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOFEN);\
-                                       /* Delay after an RCC peripheral clock enabling */ \
-                                       tmpreg = READ_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOFEN);\
-                                       UNUSED(tmpreg); \
+									   SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOFEN);\
                                        } while(0)
 #define __HAL_RCC_GPIOG_CLK_ENABLE()   do { \
-                                       __IO uint32_t tmpreg = 0x00U; \
-                                       SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOGEN);\
-                                       /* Delay after an RCC peripheral clock enabling */ \
-                                       tmpreg = READ_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOGEN);\
-                                       UNUSED(tmpreg); \
+									   SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOGEN);\
                                        } while(0)
 #define __HAL_RCC_GPIOH_CLK_ENABLE()  do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOHEN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOHEN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOHEN);\
                                         } while(0)
 #define __HAL_RCC_GPIOI_CLK_ENABLE()   do { \
                                        __IO uint32_t tmpreg = 0x00U; \
@@ -501,18 +469,11 @@ typedef struct
                                         UNUSED(tmpreg); \
                                         } while(0)
 #define __HAL_RCC_DMA1_CLK_ENABLE()  do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_DMA1EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->AHB1ENR, RCC_AHB1ENR_DMA1EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_DMA1EN);\
                                         } while(0)
 #define __HAL_RCC_DMA2_CLK_ENABLE()  do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
                                         SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_DMA2EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->AHB1ENR, RCC_AHB1ENR_DMA2EN);\
-                                        UNUSED(tmpreg); \
+										/* Delay after an RCC peripheral clock enabling */ \
                                         } while(0)
 #define __HAL_RCC_USB_OTG_HS_CLK_ENABLE()  do { \
                                        __IO uint32_t tmpreg = 0x00U; \
@@ -668,67 +629,31 @@ typedef struct
   * @{
   */
 #define __HAL_RCC_TIM2_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM2EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM2EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM2EN);\
                                         } while(0)
 #define __HAL_RCC_TIM3_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM3EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM3EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM3EN);\
                                         } while(0)
 #define __HAL_RCC_TIM4_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM4EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM4EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM4EN);\
                                         } while(0)
 #define __HAL_RCC_TIM5_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM5EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM5EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM5EN);\
                                         } while(0)
 #define __HAL_RCC_TIM6_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM6EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM6EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM6EN);\
                                         } while(0)
 #define __HAL_RCC_TIM7_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM7EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM7EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM7EN);\
                                         } while(0)
 #define __HAL_RCC_TIM12_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM12EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM12EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM12EN);\
                                         } while(0)
 #define __HAL_RCC_TIM13_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
                                         SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM13EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM13EN);\
-                                        UNUSED(tmpreg); \
                                         } while(0)
 #define __HAL_RCC_TIM14_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM14EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM14EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB1ENR, RCC_APB1ENR_TIM14EN);\
                                         } while(0)
 #define __HAL_RCC_WWDG_CLK_ENABLE()     do { \
                                         __IO uint32_t tmpreg = 0x00U; \
@@ -738,46 +663,22 @@ typedef struct
                                         UNUSED(tmpreg); \
                                         } while(0)
 #define __HAL_RCC_SPI2_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
                                         SET_BIT(RCC->APB1ENR, RCC_APB1ENR_SPI2EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_SPI2EN);\
-                                        UNUSED(tmpreg); \
                                         } while(0)
 #define __HAL_RCC_SPI3_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
                                         SET_BIT(RCC->APB1ENR, RCC_APB1ENR_SPI3EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_SPI3EN);\
-                                        UNUSED(tmpreg); \
                                         } while(0)
 #define __HAL_RCC_USART2_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB1ENR, RCC_APB1ENR_USART2EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_USART2EN);\
-                                        UNUSED(tmpreg); \
-                                        } while(0)
+										SET_BIT(RCC->APB1ENR, RCC_APB1ENR_USART2EN);\
+										} while(0)
 #define __HAL_RCC_USART3_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB1ENR, RCC_APB1ENR_USART3EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_USART3EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB1ENR, RCC_APB1ENR_USART3EN);\
                                         } while(0)
 #define __HAL_RCC_UART4_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB1ENR, RCC_APB1ENR_UART4EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_UART4EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB1ENR, RCC_APB1ENR_UART4EN);\
                                         } while(0)
 #define __HAL_RCC_UART5_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB1ENR, RCC_APB1ENR_UART5EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_UART5EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB1ENR, RCC_APB1ENR_UART5EN);\
                                         } while(0)
 #define __HAL_RCC_I2C1_CLK_ENABLE()     do { \
                                         __IO uint32_t tmpreg = 0x00U; \
@@ -922,53 +823,25 @@ typedef struct
   * @{
   */
 #define __HAL_RCC_TIM1_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM1EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM1EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM1EN);\
                                         } while(0)
 #define __HAL_RCC_TIM8_CLK_ENABLE()   do { \
-                                      __IO uint32_t tmpreg = 0x00U; \
-                                      SET_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM8EN);\
-                                      /* Delay after an RCC peripheral clock enabling */ \
-                                      tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM8EN);\
-                                      UNUSED(tmpreg); \
+									  SET_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM8EN);\
                                       } while(0)
 #define __HAL_RCC_USART1_CLK_ENABLE()   do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB2ENR, RCC_APB2ENR_USART1EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_USART1EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB2ENR, RCC_APB2ENR_USART1EN);\
                                         } while(0)
 #define __HAL_RCC_USART6_CLK_ENABLE()   do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB2ENR, RCC_APB2ENR_USART6EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_USART6EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB2ENR, RCC_APB2ENR_USART6EN);\
                                         } while(0)
 #define __HAL_RCC_ADC1_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC1EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC1EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC1EN);\
                                         } while(0)
 #define __HAL_RCC_ADC2_CLK_ENABLE()   do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC2EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC2EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC2EN);\
                                         } while(0)
 #define __HAL_RCC_ADC3_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC3EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC3EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC3EN);\
                                         } while(0)
 #define __HAL_RCC_SDIO_CLK_ENABLE()     do { \
                                         __IO uint32_t tmpreg = 0x00U; \
@@ -978,11 +851,7 @@ typedef struct
                                         UNUSED(tmpreg); \
                                         } while(0)
 #define __HAL_RCC_SPI1_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
                                         SET_BIT(RCC->APB2ENR, RCC_APB2ENR_SPI1EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_SPI1EN);\
-                                        UNUSED(tmpreg); \
                                         } while(0)
 #define __HAL_RCC_SYSCFG_CLK_ENABLE()   do { \
                                         __IO uint32_t tmpreg = 0x00U; \
@@ -993,25 +862,13 @@ typedef struct
                                         } while(0)
 
 #define __HAL_RCC_TIM9_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM9EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM9EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM9EN);\
                                         } while(0)
 #define __HAL_RCC_TIM10_CLK_ENABLE()    do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM10EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM10EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM10EN);\
                                         } while(0)
 #define __HAL_RCC_TIM11_CLK_ENABLE()    do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM11EN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM11EN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM11EN);\
                                         } while(0)
 #define __HAL_RCC_TIM1_CLK_DISABLE()   (RCC->APB2ENR &= ~(RCC_APB2ENR_TIM1EN))
 #define __HAL_RCC_TIM8_CLK_DISABLE()   (RCC->APB2ENR &= ~(RCC_APB2ENR_TIM8EN))

@@ -90,8 +90,10 @@ void uart::irq_handler ( void ) const {
 	HAL_UART_IRQHandler( &this->handle );
 }
 
+extern "C" {
 void HAL_UART_TxCpltCallback( UART_HandleTypeDef *huart ) {
 	((uart*)huart->obj)->give_semaphore();
+}
 }
 
 // Private.
