@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32f2xx_hal_uart.h
   * @author  MCD Application Team
-  * @version V1.2.1
-  * @date    14-April-2017
   * @brief   Header file of UART HAL module.
   ******************************************************************************
   * @attention
@@ -45,7 +43,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f2xx_hal_def.h"
-#include "stm32f2xx_hal_dma.h"
+
 /** @addtogroup STM32F2xx_HAL_Driver
   * @{
   */
@@ -190,7 +188,6 @@ typedef struct
   
   __IO uint32_t                 ErrorCode;        /*!< UART Error code                    */
 
-  void*							obj;			// Указатель на объект пользователя.
 }UART_HandleTypeDef;
 /**
   * @}
@@ -354,7 +351,7 @@ typedef struct
   */
 
 /** @brief Reset UART handle gstate & RxState
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
   *         UART peripheral.
   * @retval None
@@ -365,15 +362,15 @@ typedef struct
                                                      } while(0U)
 
 /** @brief  Flushes the UART DR register 
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   */
 #define __HAL_UART_FLUSH_DRREGISTER(__HANDLE__) ((__HANDLE__)->Instance->DR)
 
 /** @brief  Checks whether the specified UART flag is set or not.
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
   *         UART peripheral.
-  * @param  __FLAG__: specifies the flag to check.
+  * @param  __FLAG__ specifies the flag to check.
   *        This parameter can be one of the following values:
   *            @arg UART_FLAG_CTS:  CTS Change flag (not available for UART4 and UART5)
   *            @arg UART_FLAG_LBD:  LIN Break detection flag
@@ -391,10 +388,10 @@ typedef struct
 #define __HAL_UART_GET_FLAG(__HANDLE__, __FLAG__) (((__HANDLE__)->Instance->SR & (__FLAG__)) == (__FLAG__))   
      
 /** @brief  Clears the specified UART pending flag.
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
   *         UART peripheral.
-  * @param  __FLAG__: specifies the flag to check.
+  * @param  __FLAG__ specifies the flag to check.
   *          This parameter can be any combination of the following values:
   *            @arg UART_FLAG_CTS:  CTS Change flag (not available for UART4 and UART5).
   *            @arg UART_FLAG_LBD:  LIN Break detection flag.
@@ -415,7 +412,7 @@ typedef struct
 #define __HAL_UART_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->SR = ~(__FLAG__))
 
 /** @brief  Clear the UART PE pending flag.
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
   *         UART peripheral.
   * @retval None
@@ -429,7 +426,7 @@ typedef struct
   } while(0)
 
 /** @brief  Clear the UART FE pending flag.
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
   *         UART peripheral.
   * @retval None
@@ -437,7 +434,7 @@ typedef struct
 #define __HAL_UART_CLEAR_FEFLAG(__HANDLE__) __HAL_UART_CLEAR_PEFLAG(__HANDLE__)
 
 /** @brief  Clear the UART NE pending flag.
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
   *         UART peripheral.
   * @retval None
@@ -445,7 +442,7 @@ typedef struct
 #define __HAL_UART_CLEAR_NEFLAG(__HANDLE__) __HAL_UART_CLEAR_PEFLAG(__HANDLE__)
 
 /** @brief  Clear the UART ORE pending flag.
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
   *         UART peripheral.
   * @retval None
@@ -453,7 +450,7 @@ typedef struct
 #define __HAL_UART_CLEAR_OREFLAG(__HANDLE__) __HAL_UART_CLEAR_PEFLAG(__HANDLE__)
 
 /** @brief  Clear the UART IDLE pending flag.
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
   *         UART peripheral.
   * @retval None
@@ -461,10 +458,10 @@ typedef struct
 #define __HAL_UART_CLEAR_IDLEFLAG(__HANDLE__) __HAL_UART_CLEAR_PEFLAG(__HANDLE__)
                                                  
 /** @brief  Enable the specified UART interrupt.
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
   *         UART peripheral.
-  * @param  __INTERRUPT__: specifies the UART interrupt source to enable.
+  * @param  __INTERRUPT__ specifies the UART interrupt source to enable.
   *          This parameter can be one of the following values:
   *            @arg UART_IT_CTS:  CTS change interrupt
   *            @arg UART_IT_LBD:  LIN Break detection interrupt
@@ -481,10 +478,10 @@ typedef struct
                                                            (((__INTERRUPT__) >> 28U) == 2U)? ((__HANDLE__)->Instance->CR2 |=  ((__INTERRUPT__) & UART_IT_MASK)): \
                                                         ((__HANDLE__)->Instance->CR3 |= ((__INTERRUPT__) & UART_IT_MASK)))
 /** @brief  Disable the specified UART interrupt.
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
   *         UART peripheral.
-  * @param  __INTERRUPT__: specifies the UART interrupt source to disable.
+  * @param  __INTERRUPT__ specifies the UART interrupt source to disable.
   *          This parameter can be one of the following values:
   *            @arg UART_IT_CTS:  CTS change interrupt
   *            @arg UART_IT_LBD:  LIN Break detection interrupt
@@ -501,10 +498,10 @@ typedef struct
                                                         ((__HANDLE__)->Instance->CR3 &= ~ ((__INTERRUPT__) & UART_IT_MASK)))
 
 /** @brief  Checks whether the specified UART interrupt has occurred or not.
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
   *         UART peripheral.
-  * @param  __IT__: specifies the UART interrupt source to check.
+  * @param  __IT__ specifies the UART interrupt source to check.
   *          This parameter can be one of the following values:
   *            @arg UART_IT_CTS: CTS change interrupt (not available for UART4 and UART5)
   *            @arg UART_IT_LBD: LIN Break detection interrupt
@@ -527,7 +524,7 @@ typedef struct
   *           - UART instance should have already been initialised (through call of HAL_UART_Init() )
   *           - macro could only be called when corresponding UART instance is disabled (i.e __HAL_UART_DISABLE(__HANDLE__))
   *             and should be followed by an Enable macro (i.e __HAL_UART_ENABLE(__HANDLE__)).                                                                                                                  
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         The Handle Instance can be USART1, USART2 or LPUART.
   * @retval None
   */
@@ -546,7 +543,7 @@ typedef struct
   *           - UART instance should have already been initialised (through call of HAL_UART_Init() )
   *           - macro could only be called when corresponding UART instance is disabled (i.e __HAL_UART_DISABLE(__HANDLE__))
   *             and should be followed by an Enable macro (i.e __HAL_UART_ENABLE(__HANDLE__)). 
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         The Handle Instance can be USART1, USART2 or LPUART.
   * @retval None
   */
@@ -565,7 +562,7 @@ typedef struct
   *           - UART instance should have already been initialised (through call of HAL_UART_Init() )
   *           - macro could only be called when corresponding UART instance is disabled (i.e __HAL_UART_DISABLE(__HANDLE__))
   *             and should be followed by an Enable macro (i.e __HAL_UART_ENABLE(__HANDLE__)). 
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         The Handle Instance can be USART1, USART2 or LPUART.
   * @retval None
   */
@@ -584,7 +581,7 @@ typedef struct
   *           - UART instance should have already been initialised (through call of HAL_UART_Init() )
   *           - macro could only be called when corresponding UART instance is disabled (i.e __HAL_UART_DISABLE(__HANDLE__))
   *             and should be followed by an Enable macro (i.e __HAL_UART_ENABLE(__HANDLE__)). 
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   *         The Handle Instance can be USART1, USART2 or LPUART.
   * @retval None
   */
@@ -595,25 +592,25 @@ typedef struct
   } while(0U)
 
 /** @brief  macros to enables the UART's one bit sample method
-  * @param  __HANDLE__: specifies the UART Handle.  
+  * @param  __HANDLE__ specifies the UART Handle.  
   * @retval None
   */     
 #define __HAL_UART_ONE_BIT_SAMPLE_ENABLE(__HANDLE__) ((__HANDLE__)->Instance->CR3|= USART_CR3_ONEBIT)
 
 /** @brief  macros to disables the UART's one bit sample method
-  * @param  __HANDLE__: specifies the UART Handle.  
+  * @param  __HANDLE__ specifies the UART Handle.  
   * @retval None
   */      
 #define __HAL_UART_ONE_BIT_SAMPLE_DISABLE(__HANDLE__) ((__HANDLE__)->Instance->CR3 &= (uint16_t)~((uint16_t)USART_CR3_ONEBIT))
 
 /** @brief  Enable UART
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   * @retval None
   */    
 #define __HAL_UART_ENABLE(__HANDLE__)               ((__HANDLE__)->Instance->CR1 |=  USART_CR1_UE)
 
 /** @brief  Disable UART
-  * @param  __HANDLE__: specifies the UART Handle.
+  * @param  __HANDLE__ specifies the UART Handle.
   * @retval None
   */    
 #define __HAL_UART_DISABLE(__HANDLE__)              ((__HANDLE__)->Instance->CR1 &=  ~USART_CR1_UE)
