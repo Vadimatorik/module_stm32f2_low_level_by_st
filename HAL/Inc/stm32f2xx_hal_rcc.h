@@ -844,11 +844,7 @@ typedef struct
 										SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC3EN);\
                                         } while(0)
 #define __HAL_RCC_SDIO_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
-                                        SET_BIT(RCC->APB2ENR, RCC_APB2ENR_SDIOEN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_SDIOEN);\
-                                        UNUSED(tmpreg); \
+										SET_BIT(RCC->APB2ENR, RCC_APB2ENR_SDIOEN);\
                                         } while(0)
 #define __HAL_RCC_SPI1_CLK_ENABLE()     do { \
                                         SET_BIT(RCC->APB2ENR, RCC_APB2ENR_SPI1EN);\
