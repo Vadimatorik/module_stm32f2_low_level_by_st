@@ -14,7 +14,6 @@ MODULE_STM32F2_LOW_LEVEL_BY_ST_OBJ_FILE				:= $(addprefix build/obj/, $(MODULE_S
 MODULE_STM32F2_LOW_LEVEL_BY_ST_OBJ_FILE				+= $(addprefix build/obj/, $(MODULE_STM32F2_LOW_LEVEL_BY_ST_CPP_FILE))
 MODULE_STM32F2_LOW_LEVEL_BY_ST_OBJ_FILE				:= $(patsubst %.c, %.o, $(MODULE_STM32F2_LOW_LEVEL_BY_ST_OBJ_FILE))
 MODULE_STM32F2_LOW_LEVEL_BY_ST_OBJ_FILE				:= $(patsubst %.cpp, %.o, $(MODULE_STM32F2_LOW_LEVEL_BY_ST_OBJ_FILE))
-MODULE_STM32F2_LOW_LEVEL_BY_ST_OBJ_FILE				+= module_stm32f2_low_level_by_st/CMSIS/Device/Source/startup_stm32f205xx.s
 
 build/obj/module_stm32f2_low_level_by_st/%.o:	module_stm32f2_low_level_by_st/%.c
 	@echo [CC] $<
@@ -26,12 +25,6 @@ build/obj/module_stm32f2_low_level_by_st/%.o:	module_stm32f2_low_level_by_st/%.c
 	@echo [CPP] $<
 	@mkdir -p $(dir $@)
 	@$(CPP) $(CPP_FLAGS) $(DEFINE_PROJ) $(USER_CFG_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_PATH) $(MODULE_STM32_F2_API_OPTIMIZATION) -c $< -o $@
-
-build/obj/module_stm32f2_low_level_by_st/%.o:	module_stm32f2_low_level_by_st/%.s
-	@echo [AS] $<
-	@mkdir -p $(dir $@)
-	@$(AS) $(DEFINE_PROJ) $(USER_CFG_PATH) $(MODULE_STM32F2_LOW_LEVEL_BY_ST_PATH)  $(MODULE_STM32_F2_API_OPTIMIZATION) -c $< -o $@
-
 
 # Добавляем к общим переменным проекта.
 PROJECT_PATH			+= $(MODULE_STM32F2_LOW_LEVEL_BY_ST_PATH)

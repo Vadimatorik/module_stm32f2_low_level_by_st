@@ -29,10 +29,11 @@ RCC_RESULT rcc::set_cfg ( uint32_t number_cfg_set ) const {
         return RCC_RESULT::ERROR_OSC_INIT;
 
 
-    clk_cfg.ClockType = RCC_CLOCKTYPE_SYSCLK;
+    clk_cfg.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
 	if ( HAL_RCC_ClockConfig( &clk_cfg, this->array_cfg_st[ number_cfg_set ].f_latency ) != HAL_OK )
 		return  RCC_RESULT::ERROR_CLK_INIT;
 
+	/*
 	clk_cfg.ClockType = RCC_CLOCKTYPE_HCLK;
 	if ( HAL_RCC_ClockConfig( &clk_cfg, this->array_cfg_st[ number_cfg_set ].f_latency ) != HAL_OK )
 		return  RCC_RESULT::ERROR_CLK_INIT;
@@ -43,7 +44,7 @@ RCC_RESULT rcc::set_cfg ( uint32_t number_cfg_set ) const {
 
 	clk_cfg.ClockType = RCC_CLOCKTYPE_PCLK2;
 	if ( HAL_RCC_ClockConfig( &clk_cfg, this->array_cfg_st[ number_cfg_set ].f_latency ) != HAL_OK )
-		return  RCC_RESULT::ERROR_CLK_INIT;
+		return  RCC_RESULT::ERROR_CLK_INIT;*/
 
     return RCC_RESULT::OK;
 }

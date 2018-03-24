@@ -374,6 +374,7 @@ HAL_StatusTypeDef HAL_SD_InitCard(SD_HandleTypeDef *hsd)
   /* Required power up waiting time before starting the SD initialization 
   sequence */
   HAL_Delay(2U);
+
   
   /* Identify card operating voltage */
   errorstate = SD_PowerON(hsd);

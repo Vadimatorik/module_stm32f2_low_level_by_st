@@ -715,12 +715,8 @@ typedef struct
                                         tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_CAN2EN);\
                                         UNUSED(tmpreg); \
                                         } while(0)
-#define __HAL_RCC_PWR_CLK_ENABLE()     do { \
-                                        __IO uint32_t tmpreg = 0x00U; \
+#define __HAL_RCC_PWR_CLK_ENABLE()     do {\
                                         SET_BIT(RCC->APB1ENR, RCC_APB1ENR_PWREN);\
-                                        /* Delay after an RCC peripheral clock enabling */ \
-                                        tmpreg = READ_BIT(RCC->APB1ENR, RCC_APB1ENR_PWREN);\
-                                        UNUSED(tmpreg); \
                                         } while(0)
 #define __HAL_RCC_DAC_CLK_ENABLE()     do { \
                                         __IO uint32_t tmpreg = 0x00U; \
