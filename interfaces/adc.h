@@ -2,6 +2,8 @@
 #include "stm32f2xx_hal_adc.h"
 #include "stm32f2xx_hal_rcc.h"
 
+#ifdef __cplusplus
+
 struct AdcOneChannelCfg {
 	ADC_TypeDef*		ADCx;
 	uint32_t			clockPrescaler;								// ADC_ClockPrescaler
@@ -23,7 +25,10 @@ public:
 	void clkEnable							( void )							const;
 	void clkDisable							( void )							const;
 
+	void irqHandler							( void )							const;
 private:
 	mutable ADC_HandleTypeDef				adc;
 	mutable ADC_ChannelConfTypeDef			channelCfg;
 };
+
+#endif

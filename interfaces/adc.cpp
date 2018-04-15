@@ -62,3 +62,7 @@ bool AdcOneChannel::stopContinuousConversion ( void ) const {
 void AdcOneChannel::getMeasurement ( uint32_t& channelMeasurement ) const {
 	channelMeasurement = HAL_ADC_GetValue( &this->adc );
 }
+
+void AdcOneChannel::irqHandler ( void ) const {
+	this->adc.Instance->SR = 0;
+}
