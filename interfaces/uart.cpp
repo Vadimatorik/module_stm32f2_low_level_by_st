@@ -1,7 +1,7 @@
 #include "uart.h"
 
-uart::uart( const uart_cfg* const cfg ) : cfg(cfg) {
-	this->handle.Instance							= cfg->UARTx;
+Uart::Uart( const uartCfg* const cfg ) : cfg(cfg) {
+	this->handle.Instance							= cfg->uart;
 
 	this->handle.Init.BaudRate						= cfg->baudrate;
 	this->handle.Init.HwFlowCtl						= UART_HWCONTROL_NONE;
@@ -11,10 +11,10 @@ uart::uart( const uart_cfg* const cfg ) : cfg(cfg) {
 	this->handle.Init.StopBits						= UART_STOPBITS_1;
 	this->handle.Init.WordLength					= UART_WORDLENGTH_8B;
 
-	if ( cfg->dma_tx != nullptr ) {
+	if ( cfg->dmaTx != nullptr ) {
 		this->handle.hdmatx = &this->hdma_tx;
-		this->handle.hdmatx->Instance					= this->cfg->dma_tx;
-		this->handle.hdmatx->Init.Channel				= this->cfg->dma_tx_ch;
+		this->handle.hdmatx->Instance					= this->cfg->dmaTx;
+		this->handle.hdmatx->Init.Channel				= this->cfg->dmaTxCh;
 		this->handle.hdmatx->Init.Direction				= DMA_MEMORY_TO_PERIPH;
 		this->handle.hdmatx->Init.PeriphInc				= DMA_PINC_DISABLE;
 		this->handle.hdmatx->Init.MemInc				= DMA_MINC_ENABLE;
@@ -35,12 +35,11 @@ uart::uart( const uart_cfg* const cfg ) : cfg(cfg) {
     this->s = USER_OS_STATIC_BIN_SEMAPHORE_CREATE( &this->sb );
 }
 
-bool uart::reinit ( void ) const {
-	init_clk();
+bool Uart::reinit ( void ) const {
+	clkInit();
 
-	if ( cfg->dma_tx != nullptr ) {
-		dma_clk_on( this->cfg->dma_tx );
-		dma_irq_on( this->cfg->dma_tx, this->cfg->handler_prio );
+	if ( cfg->dmaTx != nullptr ) {
+		dmaClkOn( this->cfg->dmaTx );
 	}
 
 	HAL_StatusTypeDef r;
@@ -53,20 +52,20 @@ bool uart::reinit ( void ) const {
 	return true;
 }
 
-void uart::on ( void ) const {
+void Uart::on ( void ) const {
 	__HAL_UART_ENABLE( &this->handle );
 }
 
-void uart::off ( void ) const {
+void Uart::off ( void ) const {
 	__HAL_UART_DISABLE( &this->handle );
 }
 
-BASE_RESULT uart::tx ( const uint8_t* const  p_array_tx, const uint16_t& length, const uint32_t& timeout_ms ) const {
+BASE_RESULT Uart::tx ( const uint8_t* const  p_array_tx, const uint16_t& length, const uint32_t& timeout_ms ) const {
     if ( this->m != nullptr)			USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
 
 	USER_OS_TAKE_BIN_SEMAPHORE ( this->s, 0 );
 
-	if ( cfg->dma_tx != nullptr ) {												// Если передача идет по DMA.
+	if ( cfg->dmaTx != nullptr ) {												// Если передача идет по DMA.
 		HAL_UART_Transmit_DMA( &this->handle, (uint8_t*)p_array_tx, length );
 	} else {																	// Если по прерываниям.
 		HAL_UART_Transmit_IT( &this->handle, (uint8_t*)p_array_tx, length );
@@ -81,31 +80,31 @@ BASE_RESULT uart::tx ( const uint8_t* const  p_array_tx, const uint16_t& length,
 	return rv;
 }
 
-BASE_RESULT uart::get_byte ( uint8_t* data ) const {
+BASE_RESULT Uart::getByte ( uint8_t* data ) const {
 	*data = this->handle.Instance->DR;
 	return BASE_RESULT::OK;
 }
 
-void uart::irq_handler ( void ) const {
+void Uart::irqHandler ( void ) const {
 	HAL_UART_IRQHandler( &this->handle );
 }
 
 extern "C" {
 void HAL_UART_TxCpltCallback( UART_HandleTypeDef *huart ) {
-	((uart*)huart->obj)->give_semaphore();
+	((Uart*)huart->obj)->giveSemaphore();
 }
 }
 
 // Private.
-void uart::give_semaphore ( void ) const {
+void Uart::giveSemaphore ( void ) const {
     if ( this->s ) {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 		USER_OS_GIVE_BIN_SEMAPHORE_FROM_ISR ( this->s, &xHigherPriorityTaskWoken);
     }
 }
 
-bool uart::init_clk ( void ) const {
-    switch ( ( uint32_t )this->cfg->UARTx ) {
+bool Uart::clkInit ( void ) const {
+    switch ( ( uint32_t )this->cfg->uart ) {
 #ifdef USART1
         case    USART1_BASE:     __USART1_CLK_ENABLE();     break;
 #endif
