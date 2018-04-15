@@ -285,17 +285,16 @@ bool spi_master_8bit::init_spi ( void ) const {
 	if ( r != HAL_OK ) return false;
 
     if ( this->cfg->dma_tx != nullptr ) {
-        dma_clk_on( this->cfg->dma_tx );
+        dmaClkOn( this->cfg->dma_tx );
 		r = HAL_DMA_Init( &this->hdma_tx );
 		if ( r != HAL_OK ) return false;
-		dma_irq_on( this->cfg->dma_tx, this->cfg->handler_prio );
     }
 
     if ( this->cfg->dma_rx != nullptr ) {
-        dma_clk_on( this->cfg->dma_rx );
+        dmaClkOn( this->cfg->dma_rx );
 		r = HAL_DMA_Init( &this->hdma_rx );
 		if ( r != HAL_OK ) return false;
-		dma_irq_on( this->cfg->dma_rx, this->cfg->handler_prio );
+		dmaIrqOn( this->cfg->dma_rx, this->cfg->handler_prio );
     }
 
     if ( this->cfg->pinCs != nullptr )		this->cfg->pinCs->set( 1 );
