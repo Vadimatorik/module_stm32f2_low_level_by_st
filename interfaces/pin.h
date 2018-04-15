@@ -31,19 +31,32 @@ public:
 
     bool    read    ( void )            const;
 
-private:
-    const pinCfg*      const cfg;
+protected:
+	const pinCfg*      const cfg;
 
 };
 
 class PinMultifunc : public Pin, public PinMultifuncBase {
 public:
 	PinMultifunc( const pinCfg* const cfg, uint32_t countCfg ) : Pin( cfg ), countCfg( countCfg ) {}
-    bool    reinit  ( uint32_t number_cfg )  const;
+    bool    reinit  ( uint32_t numberCfg )	const;
 
-private:
+protected:
     const uint32_t      countCfg;
 };
+
+/// exitPin - GPIO_PIN_x.
+class PinMultifuncIt : public PinMultifunc, public PinMultifuncItBase {
+public:
+	PinMultifuncIt( const pinCfg* const cfg, uint32_t countCfg, uint32_t exitPin  ) : PinMultifunc( cfg, countCfg ), exitPin( exitPin ) {}
+
+	bool	checkIt	( void )				const;
+	void	clearIt	( void )				const;
+
+private:
+	const uint32_t			exitPin;
+};
+
 
 void gpio_clk_en (  const GPIO_TypeDef* const GPIOx );
 
