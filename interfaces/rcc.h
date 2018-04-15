@@ -3,18 +3,18 @@
 #include "stm32f2xx_hal_flash.h"
 #include <stdint.h>
 
-struct rcc_cfg {
+struct rccCfg {
 	RCC_OscInitTypeDef			osc;
 	RCC_ClkInitTypeDef			clk;
-	uint32_t                    f_latency;
+	uint32_t					fLatency;
 };
 
-class rcc : public rcc_base {
+class Rcc : public rccBase {
 public:
-    rcc( const rcc_cfg* const cfg, const uint32_t cfgCount ) : cfg( cfg ), cfgCount( cfgCount ) {}
-    RCC_RESULT setCfg ( const uint32_t number_cfg_set ) const;
+	Rcc( const rccCfg* const cfg, const uint32_t cfgCount ) : cfg( cfg ), cfgCount( cfgCount ) {}
+	RCC_RESULT setCfg ( const uint32_t number_cfg_set ) const;
 
 private:
-    const rcc_cfg*              const cfg;
-    const uint32_t              cfgCount;
+	const rccCfg*				const cfg;
+	const uint32_t				cfgCount;
 };

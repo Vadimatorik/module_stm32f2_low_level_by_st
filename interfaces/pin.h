@@ -10,14 +10,14 @@
 #define PIN_COUNT(x) sizeof(x)/sizeof(x[0])
 
 // Структуры должны быть объявлены в extern "C" области или C файле.
-struct pin_cfg {
+struct pinCfg {
     const GPIO_TypeDef*         const GPIOx;
     const GPIO_InitTypeDef      init;
 };
 
-class pin : public pin_base {
+class Pin : public PinBase {
 public:
-    pin( const pin_cfg* const cfg ) : cfg( cfg ) {}
+	Pin( const pinCfg* const cfg ) : cfg( cfg ) {}
 
     void	init    ( void )            const;                        // Перед инициализацией включается тактирование портов.
 
@@ -32,17 +32,17 @@ public:
     bool    read    ( void )            const;
 
 private:
-    const pin_cfg*      const cfg;
+    const pinCfg*      const cfg;
 
 };
 
-class pin_multifunc : public pin, public pin_multifunc_base {
+class PinMultifunc : public Pin, public PinMultifuncBase {
 public:
-    pin_multifunc( const pin_cfg* const cfg, uint32_t count_cfg ) : pin( cfg ), count_cfg( count_cfg ) {}
+	PinMultifunc( const pinCfg* const cfg, uint32_t countCfg ) : Pin( cfg ), countCfg( countCfg ) {}
     bool    reinit  ( uint32_t number_cfg )  const;
 
 private:
-    const uint32_t      count_cfg;
+    const uint32_t      countCfg;
 };
 
 void gpio_clk_en (  const GPIO_TypeDef* const GPIOx );
