@@ -1,7 +1,7 @@
 #include "timer.h"
 
 // Включаем тактирование SPI.
-static void init_clk_tim ( TIM_TypeDef* tim ) {
+static void clkTimInit ( TIM_TypeDef* tim ) {
 	switch ( ( uint32_t )tim ) {
 #ifdef TIM
 		case	TIM_BASE:		__HAL_RCC_TIM_CLK_ENABLE();			break;
@@ -84,7 +84,7 @@ bool TimCompOneChannel::reinit ( uint32_t cfg_number ) const {
 	this->hal_tim_cfg.Init.Prescaler				= this->cfg->cfg[ cfg_number ].prescaler;
 	this->hal_tim_ch_cfg.Pulse						= this->cfg->cfg[ cfg_number ].pulse;
 
-	init_clk_tim( this->cfg->tim );
+	clkTimInit( this->cfg->tim );
 	if ( HAL_TIM_OC_DeInit( &this->hal_tim_cfg ) != HAL_OK ) return false;
 	if ( HAL_TIM_OC_Init( &this->hal_tim_cfg ) != HAL_OK ) return false;
 	if ( HAL_TIM_OC_ConfigChannel( &this->hal_tim_cfg, &this->hal_tim_ch_cfg, this->cfg->outChannel ) != HAL_OK ) return false;
@@ -127,7 +127,7 @@ bool TimPwmOneChannel::reinit ( uint32_t cfg_number ) const {
 	this->tim.Init.Period					= this->cfg->cfg[ cfg_number ].period;
 	this->tim.Init.Prescaler				= this->cfg->cfg[ cfg_number ].prescaler;
 
-	init_clk_tim( this->cfg->tim );
+	clkTimInit( this->cfg->tim );
 	if ( HAL_TIM_PWM_DeInit( &this->tim ) != HAL_OK ) return false;
 	if ( HAL_TIM_PWM_Init( &this->tim ) != HAL_OK ) return false;
 	if ( HAL_TIM_PWM_ConfigChannel( &this->tim, &this->timCh, this->cfg->outChannel ) != HAL_OK ) return false;
@@ -171,6 +171,7 @@ bool TimInterrupt::reinit ( uint32_t cfg_number ) const {
 	this->tim.Init.Period					= this->cfg->cfg[ cfg_number ].period;
 	this->tim.Init.Prescaler				= this->cfg->cfg[ cfg_number ].prescaler;
 
+	clkTimInit( this->cfg->tim );
 	if ( HAL_TIM_Base_DeInit( &this->tim ) != HAL_OK ) return false;
 	if ( HAL_TIM_Base_Init( &this->tim ) != HAL_OK ) return false;
 	return true;
