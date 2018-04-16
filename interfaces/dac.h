@@ -6,27 +6,24 @@
 
 #ifdef __cplusplus
 
-struct DacOneChannelCfg {
-	uint32_t			channel;			// DAC_CHANNEL_1/DAC_CHANNEL_2.
+struct DacCfg {
 	uint32_t			buffer;				// DAC_OUTPUTBUFFER_ENABLE/DAC_OUTPUTBUFFER_DISABLE.
 };
 
-class DacOneChannel : public DacOneChannelBase {
+class Dac : public DacBase {
 public:
-	DacOneChannel( const DacOneChannelCfg* const cfg );
+	Dac( const DacCfg* const cfg );
 
-	bool	reinit 					( void )					const;
+	bool	reinit 					( void )										const;
+	void	setValue				( const uint32_t ch, const uint32_t value )		const;
 
-	void	setValue				( uint32_t& value )			const;
-	void	setValue				( const uint32_t value )	const;
-
-	void	clkEnable				( void )					const;
-	void	clkDisable				( void )					const;
+	void	clkEnable				( void )										const;
+	void	clkDisable				( void )										const;
 
 private:
 	mutable DAC_HandleTypeDef				dac;
 	mutable DAC_ChannelConfTypeDef			dacCh;
-	const uint32_t							chName;
+
 };
 
 #endif
