@@ -5,11 +5,14 @@ AdcOneChannel::AdcOneChannel( const AdcOneChannelCfg* const cfg ) {
 	this->adc.Init.ClockPrescaler		= cfg->clockPrescaler;
 	this->adc.Init.Resolution			= cfg->resolution;
 	this->adc.Init.DataAlign			= cfg->dataAlign;
-	this->adc.Init.ScanConvMode			= ENABLE;
-	this->adc.Init.EOCSelection			= ADC_EOC_SINGLE_CONV;
+	this->adc.Init.ScanConvMode			= DISABLE;
 	this->adc.Init.ContinuousConvMode	= ENABLE;
-	this->adc.Init.NbrOfConversion		= 1;
+	this->adc.Init.DiscontinuousConvMode= DISABLE;
 	this->adc.Init.ExternalTrigConv		= ADC_SOFTWARE_START;
+	this->adc.Init.ExternalTrigConvEdge	= ADC_EXTERNALTRIGCONVEDGE_NONE;
+	this->adc.Init.NbrOfConversion		= 1;
+	this->adc.Init.DMAContinuousRequests= DISABLE;
+	this->adc.Init.EOCSelection			= ADC_EOC_SEQ_CONV;
 
 	this->channelCfg.Channel			= cfg->channel;
 	this->channelCfg.Rank				= 1;
