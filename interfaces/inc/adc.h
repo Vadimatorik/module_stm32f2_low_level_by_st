@@ -1,8 +1,8 @@
+#ifdef __cplusplus
+
 #include "mc_hardware_interfaces_adc.h"
 #include "stm32f2xx_hal_adc.h"
 #include "stm32f2xx_hal_rcc.h"
-
-#ifdef __cplusplus
 
 struct AdcOneChannelCfg {
 	ADC_TypeDef*		ADCx;

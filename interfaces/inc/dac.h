@@ -1,10 +1,10 @@
 #pragma once
 
+#ifdef __cplusplus
+
 #include "mc_hardware_interfaces_dac.h"
 #include "stm32f2xx_hal_dac.h"
 #include "stm32f2xx_hal_rcc.h"
-
-#ifdef __cplusplus
 
 struct DacCfg {
 	uint32_t			buffer;				// DAC_OUTPUTBUFFER_ENABLE/DAC_OUTPUTBUFFER_DISABLE.
@@ -12,18 +12,20 @@ struct DacCfg {
 
 class Dac : public DacBase {
 public:
-	Dac( const DacCfg* const cfg );
+	Dac( const DacCfg* const cfg, const uint32_t countCfg );
 
-	bool	reinit 					( void )										const;
-	void	setValue				( const uint32_t ch, const uint32_t value )		const;
-
-	void	clkEnable				( void )										const;
-	void	clkDisable				( void )										const;
+	BASE_RESULT	reinit			( uint32_t numberCfg = 0 );
+	BASE_RESULT	setValue		( const uint32_t ch, const uint32_t value );
 
 private:
-	mutable DAC_HandleTypeDef				dac;
-	mutable DAC_ChannelConfTypeDef			dacCh;
+	void		clkEnable		( void );
+	void		clkDisable		( void );
 
+	const DacCfg*					const cfg;
+	const uint32_t					countCfg;
+
+	DAC_HandleTypeDef				dac;
+	DAC_ChannelConfTypeDef			dacCh;
 };
 
 #endif
