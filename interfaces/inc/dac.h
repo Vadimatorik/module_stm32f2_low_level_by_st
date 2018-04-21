@@ -8,6 +8,7 @@
 
 struct DacCfg {
 	uint32_t			buffer;				// DAC_OUTPUTBUFFER_ENABLE/DAC_OUTPUTBUFFER_DISABLE.
+	uint32_t			defaultValue;		// Значение, выставляемое на выводы каналов Dac после инициализации.
 };
 
 class Dac : public DacBase {

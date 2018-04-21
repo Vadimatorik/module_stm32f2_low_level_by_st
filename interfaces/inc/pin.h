@@ -9,7 +9,6 @@
 
 #define PIN_COUNT(x) sizeof(x)/sizeof(x[0])
 
-// Структуры должны быть объявлены в extern "C" области или C файле.
 struct pinCfg {
 	const GPIO_TypeDef*		 const GPIOx;
 	const GPIO_InitTypeDef	init;
@@ -45,9 +44,9 @@ protected:
 	const uint32_t		countCfg;
 };
 
-/// exitPin - GPIO_PIN_x.
 class PinMultifuncIt : public PinMultifunc, public PinMultifuncItBase {
 public:
+	/// exitPin - GPIO_PIN_x.
 	PinMultifuncIt( const pinCfg* const cfg, uint32_t countCfg, uint32_t exitPin	) : PinMultifunc( cfg, countCfg ), exitPin( exitPin ) {}
 
 	bool	checkIt	( void )				const;
