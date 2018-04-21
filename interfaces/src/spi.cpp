@@ -1,7 +1,7 @@
 #include "spi.h"
 #include <string.h>
 
-spi_master_8bit::spi_master_8bit ( const spi_master_8bit_cfg* const cfg ) : cfg( cfg ) {
+SpiMaster8Bit::SpiMaster8Bit ( const SpiMaster8BitCfg* const cfg ) : cfg( cfg ) {
     this->handle.Instance                               = cfg->SPIx;
     this->handle.Init.Mode                              = SPI_MODE_MASTER;
     this->handle.Init.Direction                         = SPI_DIRECTION_2LINES;
@@ -56,23 +56,23 @@ spi_master_8bit::spi_master_8bit ( const spi_master_8bit_cfg* const cfg ) : cfg(
     this->s = USER_OS_STATIC_BIN_SEMAPHORE_CREATE( &this->sb );
 }
 
-BASE_RESULT spi_master_8bit::reinit ( void ) const {
-    if ( this->init_clk_spi() == false )    return BASE_RESULT::ERROR_INIT;      // Включаем тактирование SPI.
+BASE_RESULT SpiMaster8Bit::reinit ( void ) const {
+    if ( this->initClkSpi() == false )    return BASE_RESULT::ERROR_INIT;      // Включаем тактирование SPI.
     //this->init_spi_irq();
     // Включаем IRQ SPI (если DMA не вызывается для используемого функционала).
-    if ( this->init_spi() == false )        return BASE_RESULT::ERROR_INIT;
+    if ( this->initSpi() == false )        return BASE_RESULT::ERROR_INIT;
     return BASE_RESULT::OK;
 }
 
-void spi_master_8bit::on ( void ) const {
+void SpiMaster8Bit::on ( void ) const {
     __HAL_SPI_ENABLE(&this->handle);
 }
 
-void spi_master_8bit::off  ( void ) const {
+void SpiMaster8Bit::off  ( void ) const {
     __HAL_SPI_DISABLE(&this->handle);
 }
 
-BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const uint16_t& length, const uint32_t& timeout_ms, const SPI::STEP_MODE step_mode  ) const {
+BASE_RESULT SpiMaster8Bit::tx ( const uint8_t* const  p_array_tx, const uint16_t& length, const uint32_t& timeout_ms, const SPI::STEP_MODE step_mode  ) const {
     (void)step_mode;
 
     if ( this->m != nullptr)			USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
@@ -97,7 +97,7 @@ BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, const uint16
 /*******************************************************************************************************
  * Обработчики.
  *******************************************************************************************************/
-void spi_master_8bit::handler ( void ) {
+void SpiMaster8Bit::handler ( void ) {
     if ( this->handle.hdmatx != nullptr )
         HAL_DMA_IRQHandler( &this->hdma_tx );
 
@@ -105,7 +105,7 @@ void spi_master_8bit::handler ( void ) {
         HAL_DMA_IRQHandler( &this->hdma_rx );
 }
 
-void spi_master_8bit::give_semaphore ( void ) {
+void SpiMaster8Bit::giveSemaphore ( void ) {
     if ( this->s ) {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xSemaphoreGiveFromISR ( this->s, &xHigherPriorityTaskWoken);
@@ -115,23 +115,23 @@ void spi_master_8bit::give_semaphore ( void ) {
 extern "C" {
 
 void HAL_SPI_TxCpltCallback ( SPI_HandleTypeDef *hspi ) {
-     spi_master_8bit* o = ( spi_master_8bit* )hspi->obj;
-     o->give_semaphore();
+     SpiMaster8Bit* o = ( SpiMaster8Bit* )hspi->obj;
+     o->giveSemaphore();
 }
 
 void HAL_SPI_RxCpltCallback ( SPI_HandleTypeDef *hspi ) {
-     spi_master_8bit* o = ( spi_master_8bit* )hspi->obj;
-     o->give_semaphore();
+     SpiMaster8Bit* o = ( SpiMaster8Bit* )hspi->obj;
+     o->giveSemaphore();
 }
 
 void HAL_SPI_TxRxCpltCallback ( SPI_HandleTypeDef *hspi ) {
-     spi_master_8bit* o = ( spi_master_8bit* )hspi->obj;
-     o->give_semaphore();
+     SpiMaster8Bit* o = ( SpiMaster8Bit* )hspi->obj;
+     o->giveSemaphore();
 }
 
 }
 
-BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms ) const {
+BASE_RESULT SpiMaster8Bit::tx ( const uint8_t* const  p_array_tx, uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms ) const {
     if ( this->m != nullptr)			USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
 
     BASE_RESULT rv = BASE_RESULT::TIME_OUT;
@@ -152,7 +152,7 @@ BASE_RESULT spi_master_8bit::tx ( const uint8_t* const  p_array_tx, uint8_t* p_a
     return rv;
 }
 
-BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const uint16_t count, const uint32_t timeout_ms ) const {
+BASE_RESULT SpiMaster8Bit::txOneItem ( const uint8_t p_item_tx, const uint16_t count, const uint32_t timeout_ms ) const {
 	if ( this->m != nullptr)			USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
 
     BASE_RESULT rv = BASE_RESULT::TIME_OUT ;
@@ -176,7 +176,7 @@ BASE_RESULT spi_master_8bit::tx_one_item ( const uint8_t p_item_tx, const uint16
     return rv;
 }
 
-BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value ) const {
+BASE_RESULT SpiMaster8Bit::rx ( uint8_t* p_array_rx, const uint16_t& length, const uint32_t& timeout_ms, const uint8_t& out_value ) const {
 	if ( this->m != nullptr)		USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
 
     BASE_RESULT rv = BASE_RESULT::TIME_OUT ;
@@ -202,7 +202,7 @@ BASE_RESULT spi_master_8bit::rx ( uint8_t* p_array_rx, const uint16_t& length, c
 }
 
 
-BASE_RESULT spi_master_8bit::set_prescaler ( uint32_t prescaler ) const {
+BASE_RESULT SpiMaster8Bit::setPrescaler ( uint32_t prescaler ) const {
 	if ( this->m != nullptr)			USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
     this->handle.Instance->CR1 &= ~( ( uint32_t )SPI_CR1_BR_Msk );
     this->handle.Instance->CR1 |= prescaler;
@@ -217,7 +217,7 @@ BASE_RESULT spi_master_8bit::set_prescaler ( uint32_t prescaler ) const {
 // Включаем тактирование SPI.
 
 extern "C" {
-bool spi_master_8bit::init_clk_spi () const {
+bool SpiMaster8Bit::initClkSpi () const {
     switch ((uint32_t)this->cfg->SPIx) {
 #ifdef SPI
         case    SPI_BASE:     __SPI_CLK_ENABLE();     break;
@@ -244,7 +244,7 @@ bool spi_master_8bit::init_clk_spi () const {
     return true;
 }
 
-bool spi_master_8bit::init_spi_irq ( void ) const {
+bool SpiMaster8Bit::initSpiIrq ( void ) const {
     // Если и TX и RX по DMA, то SPI прерывание не включается.
     if ((this->cfg->dma_tx != nullptr) && (this->cfg->dma_rx != nullptr)) {
         return false;
@@ -277,7 +277,7 @@ bool spi_master_8bit::init_spi_irq ( void ) const {
 
 }
 
-bool spi_master_8bit::init_spi ( void ) const {
+bool SpiMaster8Bit::initSpi ( void ) const {
 	HAL_StatusTypeDef r;
 
 	HAL_SPI_DeInit( &this->handle );
