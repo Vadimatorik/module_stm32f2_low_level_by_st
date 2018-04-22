@@ -1,6 +1,6 @@
 #include "pin.h"
 
-void gpio_clk_en (  const GPIO_TypeDef* GPIOx ) {
+void gpioClkEn (  const GPIO_TypeDef* GPIOx ) {
 	switch ( (uint32_t)GPIOx ) {
 #ifdef GPIOA
 		case GPIOA_BASE: __HAL_RCC_GPIOA_CLK_ENABLE(); break;
@@ -36,24 +36,24 @@ void gpio_clk_en (  const GPIO_TypeDef* GPIOx ) {
 	}
 }
 
-void Pin::init ( void ) const {
-	gpio_clk_en( this->cfg->GPIOx );
+void Pin::init ( void ) {
+	gpioClkEn( this->cfg->GPIOx );
 	HAL_GPIO_Init( ( GPIO_TypeDef* )this->cfg->GPIOx, ( GPIO_InitTypeDef * )this->cfg );
 }
 
-void Pin::set ( void ) const {
+void Pin::set ( void ) {
 	HAL_GPIO_WritePin ( ( GPIO_TypeDef* )this->cfg->GPIOx, ( uint16_t )this->cfg->init.Pin, GPIO_PIN_SET);
 }
 
-void Pin::reset ( void ) const {
+void Pin::reset ( void ) {
 	HAL_GPIO_WritePin ( ( GPIO_TypeDef* )this->cfg->GPIOx, ( uint16_t )this->cfg->init.Pin, GPIO_PIN_RESET);
 }
 
-void Pin::toggle ( void ) const {
+void Pin::toggle ( void ) {
 	HAL_GPIO_TogglePin ( ( GPIO_TypeDef* )this->cfg->GPIOx, ( uint16_t )this->cfg->init.Pin );
 }
 
-void Pin::set ( bool state ) const {
+void Pin::set ( bool state ) {
 	if ( state ) {
 		this->set();
 	} else {
@@ -61,26 +61,26 @@ void Pin::set ( bool state ) const {
 	}
 }
 
-void Pin::set ( int state ) const {
+void Pin::set ( int state ) {
 	this->set( static_cast< bool >( state ) );
 }
 
-void Pin::set ( uint8_t state ) const {
+void Pin::set ( uint8_t state ) {
 	this->set( static_cast< bool >( state ) );
 }
 
-bool Pin::read ( void ) const {
+bool Pin::read ( void ) {
 	return HAL_GPIO_ReadPin ( ( GPIO_TypeDef* )this->cfg->GPIOx, ( uint16_t )this->cfg->init.Pin );
 }
 
-bool PinMultifunc::reinit ( uint32_t numberCfg ) const {
+bool PinMultifunc::reinit ( uint32_t numberCfg ) {
 	if ( numberCfg >= this->countCfg ) return false;
 	HAL_GPIO_DeInit( ( GPIO_TypeDef* )this->cfg->GPIOx, this->cfg->init.Pin );
 	this->init();
 	return true;
 }
 
-bool PinMultifuncIt::checkIt ( void ) const {
+bool PinMultifuncIt::checkIt ( void ) {
 	if ( __HAL_GPIO_EXTI_GET_IT( this->exitPin ) != RESET) {
 		return true;
 	} else {
@@ -88,6 +88,6 @@ bool PinMultifuncIt::checkIt ( void ) const {
 	}
 }
 
-void PinMultifuncIt::clearIt ( void ) const {
+void PinMultifuncIt::clearIt ( void ) {
 	__HAL_GPIO_EXTI_CLEAR_IT( this->exitPin );
 }

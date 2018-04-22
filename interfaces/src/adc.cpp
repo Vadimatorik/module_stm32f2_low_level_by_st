@@ -1,6 +1,6 @@
 #include "adc.h"
 
-AdcOneChannel::AdcOneChannel( const AdcOneChannelCfg* const cfg ) :
+AdcOneChannel::AdcOneChannel( const AdcOneChannelCfg* const cfg, const uint32_t countCfg ) :
 	cfg( cfg ), countCfg( countCfg ) {}
 
 BASE_RESULT AdcOneChannel::reinit ( uint32_t numberCfg ) {
@@ -67,9 +67,9 @@ void AdcOneChannel::stopContinuousConversion ( void ) {
 }
 
 uint32_t AdcOneChannel::getMeasurement ( void ) {
-	return this->adc.Instance.DR;
+	return this->adc.Instance->DR;
 }
 
-void AdcOneChannel::irqHandler ( void ) const {
+void AdcOneChannel::irqHandler ( void ) {
 	this->adc.Instance->SR = 0;
 }

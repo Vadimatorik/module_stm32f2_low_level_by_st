@@ -8,8 +8,8 @@ SpiMaster8Bit::SpiMaster8Bit( const SpiMaster8BitCfg* const cfg, const uint32_t 
 	this->s											=	USER_OS_STATIC_BIN_SEMAPHORE_CREATE( &this->sb );
 }
 
-BASE_RESULT SpiMaster8Bit::reinit ( uint32_t numberCfg = 0 ) {
-	if ( numberCfg >= this->cfgCount ) return RCC_RESULT::ERROR_CFG_NUMBER;
+BASE_RESULT SpiMaster8Bit::reinit ( uint32_t numberCfg  ) {
+	if ( numberCfg >= this->countCfg ) return BASE_RESULT::INPUT_VALUE_ERROR;
 
 	this->spi.Instance								=	cfg->SPIx;
 	this->spi.Init.Mode								=	SPI_MODE_MASTER;
@@ -17,7 +17,7 @@ BASE_RESULT SpiMaster8Bit::reinit ( uint32_t numberCfg = 0 ) {
 	this->spi.Init.DataSize							=	SPI_DATASIZE_8BIT;
 	this->spi.Init.CLKPolarity						=	cfg->clkPolarity;
 	this->spi.Init.CLKPhase							=	cfg->clkPhase;
-	this->spi.Init.BaudRatePrescaler				=	*cfg->baudratePrescalerArray[ 0 ];
+	this->spi.Init.BaudRatePrescaler				=	cfg->baudratePrescalerArray[ 0 ];
 
 	this->spi.Init.NSS								=	SPI_NSS_SOFT;
 	this->spi.Init.FirstBit							=	SPI_FIRSTBIT_MSB;
@@ -64,7 +64,9 @@ BASE_RESULT SpiMaster8Bit::reinit ( uint32_t numberCfg = 0 ) {
 
 	if ( this->initClkSpi() == false )		return BASE_RESULT::ERROR_INIT;				// Включаем тактирование SPI.
 
-	if ( this->initSpi() == false )			return BASE_RESULT::ERROR_INIT;
+	if ( this->initSpi( this->cfg[ numberCfg ].handlerReseivePrio ) == false )
+		return BASE_RESULT::ERROR_INIT;
+
 	this->initSpiIrq();
 
 	this->cs										=	this->cs;
@@ -73,7 +75,7 @@ BASE_RESULT SpiMaster8Bit::reinit ( uint32_t numberCfg = 0 ) {
 }
 
 BASE_RESULT SpiMaster8Bit::on ( void ) {
-	if ( this->spi->State ==  HAL_SPI_STATE_RESET )	return BASE_RESULT::ERROR_INIT;
+	if ( this->spi.State ==  HAL_SPI_STATE_RESET )	return BASE_RESULT::ERROR_INIT;
 	__HAL_SPI_ENABLE( &this->spi );
 	return BASE_RESULT::OK;
 }
@@ -90,7 +92,8 @@ BASE_RESULT SpiMaster8Bit::tx (	const uint8_t*		const txArray,
 	BASE_RESULT rv = BASE_RESULT::TIME_OUT ;
 	xSemaphoreTake ( this->s, 0 );
 
-	if ( this->cs.pinCs != nullptr )		this->cs.pinCs->set( 0 );
+	if ( this->cs != nullptr )
+		this->cs->set( 0 );
 
 	if ( this->spi.hdmatx != nullptr ) {
 		HAL_SPI_Transmit_DMA( &this->spi, ( uint8_t* )txArray, length );
@@ -101,7 +104,7 @@ BASE_RESULT SpiMaster8Bit::tx (	const uint8_t*		const txArray,
 	}
 
 	if ( this->cs != nullptr )
-		this->cs.pinCs->set( 1 );
+		this->cs->set( 1 );
 
 	USER_OS_GIVE_MUTEX( this->m );
 
@@ -118,12 +121,12 @@ BASE_RESULT SpiMaster8Bit::tx (	const uint8_t*		const txArray,
 	BASE_RESULT rv = BASE_RESULT::TIME_OUT;
 
 	if ( this->cs != nullptr )
-		this->cs.pinCs->set( 0 );
+		this->cs->set( 0 );
 
 	if ( ( this->spi.hdmatx != nullptr ) && ( this->spi.hdmarx != nullptr ) ) {
 		HAL_SPI_TransmitReceive_DMA( &this->spi, ( uint8_t* )txArray, rxArray, length );
 	} else {
-		HAL_SPI_TransmitReceive_IT( &this->spi, txArray, rxArray, length );
+		HAL_SPI_TransmitReceive_IT( &this->spi, ( uint8_t* )txArray, rxArray, length );
 	}
 
 	if ( xSemaphoreTake ( this->s, timeoutMs ) == pdTRUE ) {
@@ -131,7 +134,7 @@ BASE_RESULT SpiMaster8Bit::tx (	const uint8_t*		const txArray,
 	}
 
 	if ( this->cs != nullptr )
-		this->cs.pinCs->set( 1 );
+		this->cs->set( 1 );
 
 	USER_OS_GIVE_MUTEX( this->m );
 
@@ -139,22 +142,23 @@ BASE_RESULT SpiMaster8Bit::tx (	const uint8_t*		const txArray,
 }
 
 BASE_RESULT SpiMaster8Bit::txOneItem (	const uint8_t	txByte,
-										const uint16_t	count	) {
+										const uint16_t	count,
+										const uint32_t	timeoutMs	) {
 	USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
 
 	BASE_RESULT rv = BASE_RESULT::TIME_OUT ;
 	xSemaphoreTake ( this->s, 0 );
 
 	if ( this->cs != nullptr )
-		this->cs.pinCs->set( 0 );
+		this->cs->set( 0 );
 
-	uint8_t arrayTx[count];
-	memset( arrayTx, txByte, count );
+	uint8_t txArray[count];
+	memset( txArray, txByte, count );
 
 	if ( ( this->spi.hdmatx != nullptr ) && ( this->spi.hdmarx != nullptr ) ) {
-		HAL_SPI_Transmit_DMA( &this->spi, ( uint8_t* )txArray, length );
+		HAL_SPI_Transmit_DMA( &this->spi, txArray, count );
 	} else {
-		HAL_SPI_Transmit_IT( &this->spi, txArray, length );
+		HAL_SPI_Transmit_IT( &this->spi, txArray, count );
 	}
 
 	if ( xSemaphoreTake ( this->s, timeoutMs ) == pdTRUE ) {
@@ -162,7 +166,7 @@ BASE_RESULT SpiMaster8Bit::txOneItem (	const uint8_t	txByte,
 	}
 
 	if ( this->cs != nullptr )
-		this->cs.pinCs->set( 1 );
+		this->cs->set( 1 );
 
 	USER_OS_GIVE_MUTEX( this->m );
 
@@ -179,7 +183,7 @@ BASE_RESULT SpiMaster8Bit::rx (	uint8_t*			rxArray,
 	BASE_RESULT rv = BASE_RESULT::TIME_OUT ;
 
 	if ( this->cs != nullptr )		 // Опускаем CS (для того, чтобы "выбрать" устроство).
-		this->cs.pinCs->set( 0 );
+		this->cs->set( 0 );
 
 	uint8_t txDummy[ length ];
 	memset( txDummy, outValue, length );
@@ -195,7 +199,7 @@ BASE_RESULT SpiMaster8Bit::rx (	uint8_t*			rxArray,
 	}
 
 	if ( this->cs != nullptr )
-		this->cs.pinCs->set( 1 );
+		this->cs->set( 1 );
 
 	USER_OS_GIVE_MUTEX( this->m );
 
@@ -210,13 +214,13 @@ void SpiMaster8Bit::reseiveByteHandler ( void ) {
 		HAL_DMA_IRQHandler( &this->dmaRx );
 }
 
-BASE_RESULT	SpiMaster8Bit;;setPrescaler ( uint32_t prescalerNumber ) {
-	if ( prescalerNumber >= this->numberBaudratePrescalerCfg ) return RCC_RESULT::ERROR_CFG_NUMBER;
+BASE_RESULT SpiMaster8Bit::setPrescaler (	uint32_t prescalerNumber	) {
+	if ( prescalerNumber >= this->numberBaudratePrescalerCfg ) return BASE_RESULT::INPUT_VALUE_ERROR;
 
 	USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
 
 	this->spi.Instance->CR1 &= ~( ( uint32_t )SPI_CR1_BR_Msk );
-	this->spi.Instance->CR1 |= THIS->baudratePrescalerArray[ prescalerNumber ];
+	this->spi.Instance->CR1 |= this->baudratePrescalerArray[ prescalerNumber ];
 
 	USER_OS_GIVE_MUTEX( this->m );
 
@@ -257,7 +261,7 @@ void HAL_SPI_TxRxCpltCallback ( SPI_HandleTypeDef *hspi ) {
 
 // Включаем тактирование SPI.
 bool SpiMaster8Bit::initClkSpi ( void ) {
-	switch ((uint32_t)this->cfg[ numberCfg ].SPIx) {
+	switch ( ( uint32_t )this->spi.Instance ) {
 #ifdef SPI
 	case		SPI_BASE:		 __SPI_CLK_ENABLE();		return true;
 #endif
@@ -283,13 +287,13 @@ bool SpiMaster8Bit::initClkSpi ( void ) {
 	return false;
 }
 
-bool SpiMaster8Bit::initSpiIrq ( void ) const {
+bool SpiMaster8Bit::initSpiIrq ( void ) {
 	// Если и TX и RX по DMA, то SPI прерывание не включается.
-	if ( ( this->cfg[ numberCfg ].dmaTx != nullptr ) && ( this->cfg[ numberCfg ].dmaRx != nullptr ) ) {
+	if ( ( this->spi.hdmatx != nullptr ) && ( this->spi.hdmarx != nullptr ) ) {
 		return false;
 	}
 
-	switch ( ( uint32_t )this->cfg[ numberCfg ].SPIx ) {
+	switch ( ( uint32_t )this->spi.Instance ) {
 #ifdef SPI
 	case	SPI_BASE:		NVIC_SetPriority(SPI_IRQn, 6);		NVIC_EnableIRQ(SPI_IRQn);		return true;
 #endif
@@ -316,28 +320,28 @@ bool SpiMaster8Bit::initSpiIrq ( void ) const {
 
 }
 
-bool SpiMaster8Bit::initSpi ( void ) const {
+bool SpiMaster8Bit::initSpi ( const uint32_t prioInterruptDmaRx ) {
 	HAL_SPI_DeInit( &this->spi );
 
 	HAL_StatusTypeDef r;
 	r = HAL_SPI_Init ( &this->spi );
 	if ( r != HAL_OK ) return false;
 
-	if ( this->cfg[ numberCfg ].dmaTx != nullptr ) {
-		dmaClkOn( this->cfg[ numberCfg ].dmaTx );
+	if ( this->spi.hdmatx != nullptr ) {
+		dmaClkOn( this->spi.hdmatx->Instance );
 		r = HAL_DMA_Init( &this->dmaTx );
 		if ( r != HAL_OK ) return false;
 	}
 
-	if ( this->cfg[ numberCfg ].dmaRx != nullptr ) {
-		dmaClkOn( this->cfg[ numberCfg ].dmaRx );
+	if ( this->spi.hdmarx != nullptr ) {
+		dmaClkOn( this->spi.hdmarx->Instance );
 		r = HAL_DMA_Init( &this->dmaRx );
 		if ( r != HAL_OK ) return false;
-		dmaIrqOn( this->cfg[ numberCfg ].dmaRx, this->cfg[ numberCfg ].handlerReseivePrio );
+		dmaIrqOn( this->spi.hdmarx->Instance, prioInterruptDmaRx );
 	}
 
 	if ( this->cs != nullptr )
-		this->cs.pinCs->set( 1 );
+		this->cs->set( 1 );
 
 	return true;
 }

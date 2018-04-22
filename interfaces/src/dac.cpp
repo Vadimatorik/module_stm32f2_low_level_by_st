@@ -6,7 +6,7 @@ Dac::Dac( const DacCfg* const cfg, const uint32_t countCfg ) :
 	this->dacCh.DAC_Trigger						= DAC_TRIGGER_NONE;
 }
 
-BASE_RESULT Dac::reinit ( uint32_t numberCfg = 0 ) {
+BASE_RESULT Dac::reinit ( uint32_t numberCfg ) {
 	if ( numberCfg >= this->countCfg )	return BASE_RESULT::INPUT_VALUE_ERROR;
 
 	/// Заполнение HAL-структуры.
@@ -27,13 +27,11 @@ BASE_RESULT Dac::reinit ( uint32_t numberCfg = 0 ) {
 	if ( HAL_DAC_ConfigChannel( &this->dac, &this->dacCh, DAC_CHANNEL_2 ) != HAL_OK)
 		return BASE_RESULT::ERROR_INIT;
 
-	HAL_DAC_SetValue( &this->dac, DAC_CHANNEL_1,	DAC_ALIGN_12B_R, value );
-
 	HAL_DAC_Start(  &this->dac, DAC_CHANNEL_1 );
 	HAL_DAC_Start(  &this->dac, DAC_CHANNEL_2 );
 
-	HAL_DAC_SetValue( &this->dac, DAC_CHANNEL_1,	DAC_ALIGN_12B_R, this->cfg[ numberCfg ]->defaultValue );
-	HAL_DAC_SetValue( &this->dac, DAC_CHANNEL_2,	DAC_ALIGN_12B_R, this->cfg[ numberCfg ]->defaultValue );
+	HAL_DAC_SetValue( &this->dac, DAC_CHANNEL_1,	DAC_ALIGN_12B_R, this->cfg[ numberCfg ].defaultValue );
+	HAL_DAC_SetValue( &this->dac, DAC_CHANNEL_2,	DAC_ALIGN_12B_R, this->cfg[ numberCfg ].defaultValue );
 
 	return BASE_RESULT::OK;
 }

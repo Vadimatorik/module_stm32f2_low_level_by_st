@@ -18,27 +18,27 @@ class Pin : public PinBase {
 public:
 	Pin( const pinCfg* const cfg ) : cfg( cfg ) {}
 
-	void	init	( void )			const;						// Перед инициализацией включается тактирование портов.
+	void	init			( void );	// Перед инициализацией включается тактирование портов.
 
-	void	set	 ( void )			const;
-	void	reset	( void )			const;
-	void	toggle	( void )			const;
+	void	set				( void );
+	void	reset			( void );
+	void	toggle			( void );
 
-	void	set	 ( bool state )		const;
-	void	set	 ( int state )		const;
-	void	set	 ( uint8_t state )	const;
+	void	set				( bool state );
+	void	set				( int state );
+	void	set				( uint8_t state );
 
-	bool	read	( void )			const;
+	bool	read			( void );
 
 protected:
-	const pinCfg*		const cfg;
+	const pinCfg*			const cfg;
 
 };
 
 class PinMultifunc : public Pin, public PinMultifuncBase {
 public:
 	PinMultifunc( const pinCfg* const cfg, uint32_t countCfg ) : Pin( cfg ), countCfg( countCfg ) {}
-	bool	reinit	( uint32_t numberCfg )	const;
+	bool	reinit			( uint32_t numberCfg );
 
 protected:
 	const uint32_t		countCfg;
@@ -49,12 +49,14 @@ public:
 	/// exitPin - GPIO_PIN_x.
 	PinMultifuncIt( const pinCfg* const cfg, uint32_t countCfg, uint32_t exitPin	) : PinMultifunc( cfg, countCfg ), exitPin( exitPin ) {}
 
-	bool	checkIt	( void )				const;
-	void	clearIt	( void )				const;
+	bool	checkIt			( void );
+	void	clearIt			( void );
 
 private:
 	const uint32_t			exitPin;
 };
+
+void gpioClkEn (  const GPIO_TypeDef* GPIOx );
 
 #endif
 

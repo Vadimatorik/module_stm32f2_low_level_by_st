@@ -61,45 +61,54 @@ static void clkTimInit ( TIM_TypeDef* tim ) {
 // tim_comp_one_channel
 //**********************************************************************
 TimCompOneChannel::TimCompOneChannel ( const timCompOneChannelCfg* const cfg ) : cfg( cfg ) {
-	this->hal_tim_cfg.Instance						= this->cfg->tim;
+	this->tim.Instance						= this->cfg->tim;
 
-	this->hal_tim_cfg.Channel						= this->cfg->timChannel;
-	this->hal_tim_cfg.Init.AutoReloadPreload		= TIM_AUTORELOAD_PRELOAD_ENABLE;
-	this->hal_tim_cfg.Init.ClockDivision			= TIM_CLOCKDIVISION_DIV1;
-	this->hal_tim_cfg.Init.CounterMode				= TIM_COUNTERMODE_UP;
+	this->tim.Init.AutoReloadPreload		= TIM_AUTORELOAD_PRELOAD_ENABLE;
+	this->tim.Init.ClockDivision			= TIM_CLOCKDIVISION_DIV1;
+	this->tim.Init.CounterMode				= TIM_COUNTERMODE_UP;
 
 	/// reinit настраивает эти параметры.
-	this->hal_tim_cfg.Init.Period					= 0;
-	this->hal_tim_cfg.Init.Prescaler				= 0;
+	this->tim.Init.Period					= 0;
+	this->tim.Init.Prescaler				= 0;
 
-	this->hal_tim_ch_cfg.OCMode						= TIM_OCMODE_TOGGLE;
-	this->hal_tim_ch_cfg.OCPolarity					= this->cfg->polarity;
-	this->hal_tim_ch_cfg.Pulse						= 0;
+	this->timCh.OCMode						= TIM_OCMODE_TOGGLE;
+	this->timCh.OCPolarity					= this->cfg->polarity;
+	this->timCh.Pulse						= 0;
 }
 
-bool TimCompOneChannel::reinit ( uint32_t cfg_number ) const {
-	if ( cfg_number >= this->cfg->countCfg ) return false;
+BASE_RESULT TimCompOneChannel::reinit ( uint32_t numberCfg ) {
+	if ( numberCfg >= this->cfg->countCfg )
+		return BASE_RESULT::INPUT_VALUE_ERROR;
 
-	this->hal_tim_cfg.Init.Period					= this->cfg->cfg[ cfg_number ].period;
-	this->hal_tim_cfg.Init.Prescaler				= this->cfg->cfg[ cfg_number ].prescaler;
-	this->hal_tim_ch_cfg.Pulse						= this->cfg->cfg[ cfg_number ].pulse;
+	this->tim.Init.Period					= this->cfg->cfg[ numberCfg ].period;
+	this->tim.Init.Prescaler				= this->cfg->cfg[ numberCfg ].prescaler;
+	this->timCh.Pulse						= this->cfg->cfg[ numberCfg ].pulse;
 
-	clkTimInit( this->cfg->tim );
-	if ( HAL_TIM_OC_DeInit( &this->hal_tim_cfg ) != HAL_OK ) return false;
-	if ( HAL_TIM_OC_Init( &this->hal_tim_cfg ) != HAL_OK ) return false;
-	if ( HAL_TIM_OC_ConfigChannel( &this->hal_tim_cfg, &this->hal_tim_ch_cfg, this->cfg->outChannel ) != HAL_OK ) return false;
+	clkTimInit( this->tim.Instance );
 
-	return true;
+	if ( HAL_TIM_OC_DeInit( &this->tim ) != HAL_OK )
+		return BASE_RESULT::ERROR_INIT;
+
+	if ( HAL_TIM_OC_Init( &this->tim ) != HAL_OK )
+		return BASE_RESULT::ERROR_INIT;
+
+	if ( HAL_TIM_OC_ConfigChannel( &this->tim, &this->timCh, this->cfg->outChannel ) != HAL_OK )
+		return BASE_RESULT::ERROR_INIT;
+
+	return BASE_RESULT::OK;
 }
 
-bool TimCompOneChannel::on ( void ) const {
-	if ( HAL_TIM_OC_Start( &this->hal_tim_cfg, this->cfg->outChannel ) != HAL_OK ) return false;
-	return true;
+BASE_RESULT TimCompOneChannel::on ( void ) {
+	if ( this->tim.State == HAL_TIM_STATE_RESET )
+		return BASE_RESULT::ERROR_INIT;
+
+	HAL_TIM_OC_Start( &this->tim, this->cfg->outChannel );
+
+	return BASE_RESULT::OK;
 }
 
-bool TimCompOneChannel::off ( void ) const {
-	if ( HAL_TIM_OC_Stop( &this->hal_tim_cfg, this->cfg->outChannel ) != HAL_OK ) return false;
-	return true;
+void TimCompOneChannel::off ( void ) {
+	HAL_TIM_OC_Stop( &this->tim, this->cfg->outChannel );
 }
 
 //**********************************************************************
@@ -108,7 +117,6 @@ bool TimCompOneChannel::off ( void ) const {
 TimPwmOneChannel::TimPwmOneChannel ( const timPwmOneChannelCfg* const cfg ) : cfg( cfg ) {
 	this->tim.Instance						= this->cfg->tim;
 
-	this->tim.Channel						= this->cfg->timChannel;
 	this->tim.Init.AutoReloadPreload		= TIM_AUTORELOAD_PRELOAD_ENABLE;
 	this->tim.Init.ClockDivision			= TIM_CLOCKDIVISION_DIV1;
 	this->tim.Init.CounterMode				= TIM_COUNTERMODE_UP;
@@ -121,31 +129,41 @@ TimPwmOneChannel::TimPwmOneChannel ( const timPwmOneChannelCfg* const cfg ) : cf
 	this->timCh.OCPolarity					= this->cfg->polarity;
 }
 
-bool TimPwmOneChannel::reinit ( uint32_t cfg_number ) const {
-	if ( cfg_number >= this->cfg->countCfg ) return false;
+BASE_RESULT TimPwmOneChannel::reinit ( uint32_t numberCfg ) {
+	if ( numberCfg >= this->cfg->countCfg )
+		return BASE_RESULT::INPUT_VALUE_ERROR;
 
-	this->tim.Init.Period					= this->cfg->cfg[ cfg_number ].period;
-	this->tim.Init.Prescaler				= this->cfg->cfg[ cfg_number ].prescaler;
+	this->tim.Init.Period					= this->cfg->cfg[ numberCfg ].period;
+	this->tim.Init.Prescaler				= this->cfg->cfg[ numberCfg ].prescaler;
 
 	clkTimInit( this->cfg->tim );
-	if ( HAL_TIM_PWM_DeInit( &this->tim ) != HAL_OK ) return false;
-	if ( HAL_TIM_PWM_Init( &this->tim ) != HAL_OK ) return false;
-	if ( HAL_TIM_PWM_ConfigChannel( &this->tim, &this->timCh, this->cfg->outChannel ) != HAL_OK ) return false;
 
-	return true;
+	if ( HAL_TIM_PWM_DeInit( &this->tim ) != HAL_OK )
+		return BASE_RESULT::ERROR_INIT;
+
+	if ( HAL_TIM_PWM_Init( &this->tim ) != HAL_OK )
+		return BASE_RESULT::ERROR_INIT;
+
+	if ( HAL_TIM_PWM_ConfigChannel( &this->tim, &this->timCh, this->cfg->outChannel ) != HAL_OK )
+		return BASE_RESULT::ERROR_INIT;
+
+	return BASE_RESULT::OK;
 }
 
-bool TimPwmOneChannel::on ( void ) const {
-	if ( HAL_TIM_PWM_Start( &this->tim, this->cfg->outChannel ) != HAL_OK ) return false;
-	return true;
+BASE_RESULT TimPwmOneChannel::on ( void ) {
+	if ( this->tim.State == HAL_TIM_STATE_RESET )
+		return BASE_RESULT::ERROR_INIT;
+
+	HAL_TIM_PWM_Start( &this->tim, this->cfg->outChannel );
+
+	return BASE_RESULT::OK;
 }
 
-bool TimPwmOneChannel::off ( void ) const {
-	if ( HAL_TIM_PWM_Stop( &this->tim, this->cfg->outChannel ) != HAL_OK ) return false;
-	return true;
+void TimPwmOneChannel::off ( void ) {
+	HAL_TIM_PWM_Stop( &this->tim, this->cfg->outChannel );
 }
 
-void TimPwmOneChannel::setDuty ( float duty ) const {
+void TimPwmOneChannel::setDuty ( float duty ) {
 	__HAL_TIM_SET_COMPARE( &this->tim, this->cfg->outChannel, this->cfg->tim->ARR * duty );
 }
 
@@ -155,7 +173,6 @@ void TimPwmOneChannel::setDuty ( float duty ) const {
 TimInterrupt::TimInterrupt( const timInterruptCfg* const cfg ) : cfg( cfg ) {
 	this->tim.Instance						= this->cfg->tim;
 
-	this->tim.Channel						= this->cfg->timChannel;
 	this->tim.Init.AutoReloadPreload		= TIM_AUTORELOAD_PRELOAD_ENABLE;
 	this->tim.Init.ClockDivision			= TIM_CLOCKDIVISION_DIV1;
 	this->tim.Init.CounterMode				= TIM_COUNTERMODE_UP;
@@ -165,28 +182,37 @@ TimInterrupt::TimInterrupt( const timInterruptCfg* const cfg ) : cfg( cfg ) {
 	this->tim.Init.Prescaler				= 0;
 }
 
-bool TimInterrupt::reinit ( uint32_t cfg_number ) const {
-	if ( cfg_number >= this->cfg->countCfg ) return false;
+BASE_RESULT TimInterrupt::reinit ( uint32_t numberCfg ) {
+	if ( numberCfg >= this->cfg->countCfg )
+		return BASE_RESULT::INPUT_VALUE_ERROR;
 
-	this->tim.Init.Period					= this->cfg->cfg[ cfg_number ].period;
-	this->tim.Init.Prescaler				= this->cfg->cfg[ cfg_number ].prescaler;
+	this->tim.Init.Period					= this->cfg->cfg[ numberCfg ].period;
+	this->tim.Init.Prescaler				= this->cfg->cfg[ numberCfg ].prescaler;
 
 	clkTimInit( this->cfg->tim );
-	if ( HAL_TIM_Base_DeInit( &this->tim ) != HAL_OK ) return false;
-	if ( HAL_TIM_Base_Init( &this->tim ) != HAL_OK ) return false;
-	return true;
+
+	if ( HAL_TIM_Base_DeInit( &this->tim ) != HAL_OK )
+		return BASE_RESULT::ERROR_INIT;
+
+	if ( HAL_TIM_Base_Init( &this->tim ) != HAL_OK )
+		return BASE_RESULT::ERROR_INIT;
+
+	return BASE_RESULT::OK;
 }
 
-bool TimInterrupt::on ( void ) const {
-	if ( HAL_TIM_Base_Start_IT( &this->tim ) != HAL_OK ) return false;
-	return true;
+BASE_RESULT TimInterrupt::on ( void ) {
+	if ( this->tim.State == HAL_TIM_STATE_RESET )
+		return BASE_RESULT::ERROR_INIT;
+
+	HAL_TIM_Base_Start_IT( &this->tim );
+
+	return BASE_RESULT::OK;
 }
 
-bool TimInterrupt::off ( void ) const {
-	if ( HAL_TIM_Base_Stop_IT( &this->tim ) != HAL_OK ) return false;
-	return true;
+void TimInterrupt::off ( void ) {
+	HAL_TIM_Base_Stop_IT( &this->tim );
 }
 
-void TimInterrupt::clearInterruptFlag ( void ) const {
+void TimInterrupt::clearInterruptFlag ( void ) {
 	HAL_TIM_IRQHandler( &this->tim );
 }

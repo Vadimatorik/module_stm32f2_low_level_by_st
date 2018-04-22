@@ -6,30 +6,35 @@
 #include "stm32f2xx_hal_conf.h"
 #include "user_os.h"
 
-struct wdt_cfg {
-	const uint8_t	task_prio;				// Приоритет задачи, сбрасывающий wdt.
-	const uint32_t	run_time_ms;			// Время перезагрузки по сторожевому таймеру.
+struct wdtCfg {
+	const uint8_t	taskPrio;				// Приоритет задачи, сбрасывающий wdt.
+	const uint32_t	runTimeMs;				// Время перезагрузки по сторожевому таймеру.
 											// при номинальном режиме работы системы.
-	const uint32_t	startup_time_ms;		// Время перезагрузки по сторожевому таймеру при запуске системы.
-	const uint32_t	service_time_ms;		// Время перезагрузки по сторожевому таймеру
+	const uint32_t	startupTimeMs;			// Время перезагрузки по сторожевому таймеру при запуске системы.
+	const uint32_t	serviceTimeMs;			// Время перезагрузки по сторожевому таймеру
 											// во время сервисных операций (например, стирание и перезапись flash).
 };
 
-class wdt : public wdt_base {
+class Wdt : public WdtBase {
 public:
-	wdt ( const wdt_cfg* const cfg ) : cfg( cfg ) {}
+	Wdt ( const wdtCfg* const cfg, const uint32_t countCfg )
+		: cfg( cfg ), countCfg( countCfg ),
+		nowCfg( 0 ) {}
 
-	void init ( void )			const;
-	void reset ( void )			const;
-	void reset_service ( void ) const;
+	BASE_RESULT		reinit			( uint32_t numberCfg = 0 );
+	void			reset			( void );
+	void			resetService	( void );
 
 private:
-	const wdt_cfg*							const cfg;
+	const wdtCfg*							const cfg;
+	const uint32_t							countCfg;
+
+	uint32_t								nowCfg;
 
 	static void task ( void* p_obj );
 
-	mutable USER_OS_STATIC_STACK_TYPE		task_stack[ 64 ] = { 0 };
-	mutable USER_OS_STATIC_TASK_STRUCT_TYPE	task_struct;
+	USER_OS_STATIC_STACK_TYPE		task_stack[ 64 ] = { 0 };
+	USER_OS_STATIC_TASK_STRUCT_TYPE	task_struct;
 
 	uint8_t									reboot;
 };

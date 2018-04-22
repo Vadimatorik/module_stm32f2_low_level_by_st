@@ -9,11 +9,13 @@
 
 struct SpiMaster8BitCfg {
 	SPI_TypeDef*				SPIx;
+
 	const PinBase*				pinCs;
+
 	uint32_t					clkPolarity;					/// SPI_Clock_Polarity.
 	uint32_t					clkPhase;						/// SPI_Clock_Phase.
 
-	uint32_t**					baudratePrescalerArray;			/// SPI_BaudRate_Prescaler
+	uint32_t*					baudratePrescalerArray;			/// SPI_BaudRate_Prescaler
 	uint32_t					numberBaudratePrescalerCfg;		/// Колличество режимов.
 
 	/// В случае, если DMA не используется (передача и прием на прерываниях),
@@ -36,39 +38,39 @@ public:
 	BASE_RESULT		on				( void );
 	void			off				( void );
 
-	BASE_RESULT		tx				(	const uint8_t*		const txArray,
-										const uint16_t		length		=	1,
-										const uint32_t		timeoutMs	=	100	);
+	BASE_RESULT	tx				(	const uint8_t*		const txArray,
+									const uint16_t		length		=	1,
+									const uint32_t		timeoutMs	=	100	);
 
-	BASE_RESULT		tx				(	const uint8_t*		const txArray,
-										uint8_t*			rxArray,
-										const uint16_t		length		=	1,
-										const uint32_t		timeoutMs	=	100	);
+	BASE_RESULT tx				(	const uint8_t*		const txArray,
+									uint8_t*			rxArray,
+									const uint16_t		length		=	1,
+									const uint32_t		timeoutMs	=	100	);
 
-	BASE_RESULT		txOneItem		(	const uint8_t	txByte,
-										const uint16_t	count			=	1,
-										const uint32_t		timeoutMs	=	100	);
+	BASE_RESULT	txOneItem		(	const uint8_t		txByte,
+									const uint16_t		count		=	1,
+									const uint32_t		timeoutMs	=	100	);
 
-	BASE_RESULT		rx				(	uint8_t*			rxArray,
-										const uint16_t		length		=	1,
-										const uint32_t		timeoutMs	=	100,
-										const uint8_t		outValue	=	0xFF );
+	BASE_RESULT	rx				(	uint8_t*			rxArray,
+									const uint16_t		length		=	1,
+									const uint32_t		timeoutMs	=	100,
+									const uint8_t		outValue	=	0xFF );
 
 	BASE_RESULT		setPrescaler	(	uint32_t prescalerNumber		=	0	);
 
 
-	void	giveSemaphore ( void );												// Отдать симафор из прерывания (внутренняя функция.
+	void	giveSemaphore			( void );			// Отдать симафор из прерывания (внутренняя функция.
 	void	reseiveByteHandler		( void );
 
 private:
-	bool	initClkSpi		( void ) const;					// Включаем тактирование SPI и DMA (если используется).
-	bool	initSpi			( void ) const;					// Инициализируем только SPI (считается, что он уже затактирован).
-	bool	initSpiIrq		( void ) const;					// Включаем нужные прерывания (по SPI (если нет DMA) иначе DMA).
+	bool	initClkSpi		( void );											// Включаем тактирование SPI и DMA (если используется).
+	bool	initSpi			( const uint32_t prioInterruptDmaRx );				// Инициализируем только SPI (считается, что он уже затактирован).
+	bool	initSpiIrq		( void );											// Включаем нужные прерывания (по SPI (если нет DMA) иначе DMA).
 
 	const SpiMaster8BitCfg*					const cfg;
 	const uint32_t							countCfg;
 
-	uint32_t**								baudratePrescalerArray;
+	uint32_t*								baudratePrescalerArray;
 	uint32_t								numberBaudratePrescalerCfg;
 
 	SPI_HandleTypeDef						spi;
