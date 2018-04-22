@@ -30,7 +30,7 @@
 */
 
 /* Entry Point */
-ENTRY(reset_handler)
+ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
 _estack = 0x2001FFFF;    /* end of RAM */

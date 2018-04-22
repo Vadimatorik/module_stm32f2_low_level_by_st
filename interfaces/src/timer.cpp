@@ -57,6 +57,52 @@ static void clkTimInit ( TIM_TypeDef* tim ) {
 	};
 }
 
+/*!
+ * TimCounter.
+ */
+TimCounter::TimCounter ( const timCounterCfg* const cfg ) : cfg( cfg ) {
+	this->tim.Instance						= this->cfg->tim;
+
+	this->tim.Init.AutoReloadPreload		= TIM_AUTORELOAD_PRELOAD_ENABLE;
+	this->tim.Init.ClockDivision			= TIM_CLOCKDIVISION_DIV1;
+	this->tim.Init.CounterMode				= TIM_COUNTERMODE_UP;
+}
+
+BASE_RESULT TimCounter::reinit ( uint32_t numberCfg ) {
+	if ( numberCfg >= this->cfg->countCfg )
+		return BASE_RESULT::INPUT_VALUE_ERROR;
+
+	this->tim.Init.Period					= this->cfg->cfg[ numberCfg ].period;
+	this->tim.Init.Prescaler				= this->cfg->cfg[ numberCfg ].prescaler;
+
+	clkTimInit( this->tim.Instance );
+
+	if ( HAL_TIM_Base_DeInit( &this->tim ) != HAL_OK )
+		return BASE_RESULT::ERROR_INIT;
+
+	if ( HAL_TIM_Base_Init( &this->tim ) != HAL_OK )
+		return BASE_RESULT::ERROR_INIT;
+
+	return BASE_RESULT::OK;
+}
+
+BASE_RESULT TimCounter::on ( void ) {
+	if ( this->tim.State == HAL_TIM_STATE_RESET )
+		return BASE_RESULT::ERROR_INIT;
+
+	HAL_TIM_Base_Start( &this->tim );
+
+	return BASE_RESULT::OK;
+}
+
+void TimCounter::off ( void ) {
+	HAL_TIM_Base_Stop( &this->tim  );
+}
+
+uint32_t TimCounter::getCounter ( void ) {
+	return this->tim.Instance->CNT;
+}
+
 //**********************************************************************
 // tim_comp_one_channel
 //**********************************************************************
@@ -66,10 +112,6 @@ TimCompOneChannel::TimCompOneChannel ( const timCompOneChannelCfg* const cfg ) :
 	this->tim.Init.AutoReloadPreload		= TIM_AUTORELOAD_PRELOAD_ENABLE;
 	this->tim.Init.ClockDivision			= TIM_CLOCKDIVISION_DIV1;
 	this->tim.Init.CounterMode				= TIM_COUNTERMODE_UP;
-
-	/// reinit настраивает эти параметры.
-	this->tim.Init.Period					= 0;
-	this->tim.Init.Prescaler				= 0;
 
 	this->timCh.OCMode						= TIM_OCMODE_TOGGLE;
 	this->timCh.OCPolarity					= this->cfg->polarity;
