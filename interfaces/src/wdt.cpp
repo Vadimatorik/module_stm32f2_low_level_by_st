@@ -17,7 +17,7 @@ BASE_RESULT Wdt::reinit ( uint32_t numberCfg ) {
 
 	IWDG->KR	= 0xAAAA;								// Перезагружаем WDT.
 
-	USER_OS_STATIC_TASK_CREATE( this->task, "wdt_th", 64, ( void* )this, this->cfg->taskPrio, this->task_stack, &this->task_struct );
+	USER_OS_STATIC_TASK_CREATE( this->task, "wdt", 64, ( void* )this, this->cfg->taskPrio, this->task_stack, &this->task_struct );
 
 	return BASE_RESULT::OK;
 }
