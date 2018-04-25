@@ -64,10 +64,8 @@ BASE_RESULT SpiMaster8Bit::reinit ( uint32_t numberCfg  ) {
 
 	if ( this->initClkSpi() == false )		return BASE_RESULT::ERROR_INIT;				// Включаем тактирование SPI.
 
-	if ( this->initSpi( this->cfg[ numberCfg ].handlerReseivePrio ) == false )
+	if ( this->initSpi() == false )
 		return BASE_RESULT::ERROR_INIT;
-
-	this->initSpiIrq();
 
 	this->cs										=	this->cs;
 
@@ -155,7 +153,7 @@ BASE_RESULT SpiMaster8Bit::txOneItem (	const uint8_t	txByte,
 	uint8_t txArray[count];
 	memset( txArray, txByte, count );
 
-	if ( ( this->spi.hdmatx != nullptr ) && ( this->spi.hdmarx != nullptr ) ) {
+	if ( this->spi.hdmatx != nullptr ) {
 		HAL_SPI_Transmit_DMA( &this->spi, txArray, count );
 	} else {
 		HAL_SPI_Transmit_IT( &this->spi, txArray, count );
@@ -206,7 +204,7 @@ BASE_RESULT SpiMaster8Bit::rx (	uint8_t*			rxArray,
 	return rv;
 }
 
-void SpiMaster8Bit::reseiveByteHandler ( void ) {
+void SpiMaster8Bit::irqHandler ( void ) {
 	if ( this->spi.hdmatx != nullptr )
 		HAL_DMA_IRQHandler( &this->dmaTx );
 
@@ -287,40 +285,7 @@ bool SpiMaster8Bit::initClkSpi ( void ) {
 	return false;
 }
 
-bool SpiMaster8Bit::initSpiIrq ( void ) {
-	// Если и TX и RX по DMA, то SPI прерывание не включается.
-	if ( ( this->spi.hdmatx != nullptr ) && ( this->spi.hdmarx != nullptr ) ) {
-		return false;
-	}
-
-	switch ( ( uint32_t )this->spi.Instance ) {
-#ifdef SPI
-	case	SPI_BASE:		NVIC_SetPriority(SPI_IRQn, 6);		NVIC_EnableIRQ(SPI_IRQn);		return true;
-#endif
-#ifdef SPI1
-	case	SPI1_BASE:		NVIC_SetPriority(SPI1_IRQn, 6);		NVIC_EnableIRQ(SPI1_IRQn);		return true;
-#endif
-#ifdef SPI2
-	case	SPI2_BASE:		NVIC_SetPriority(SPI2_IRQn, 6);		NVIC_EnableIRQ(SPI2_IRQn);		return true;
-#endif
-#ifdef SPI3
-	case	SPI3_BASE:		NVIC_SetPriority(SPI3_IRQn, 6);		NVIC_EnableIRQ(SPI3_IRQn);		return true;
-#endif
-#ifdef SPI4
-	case	SPI4_BASE:		NVIC_SetPriority(SPI4_IRQn, 6);		NVIC_EnableIRQ(SPI4_IRQn);		return true;
-#endif
-#ifdef SPI5
-	case	SPI5_BASE:		NVIC_SetPriority(SPI5_IRQn, 6);		NVIC_EnableIRQ(SPI5_IRQn);		return true;
-#endif
-#ifdef SPI6
-	case	SPI6_BASE:		NVIC_SetPriority(SPI6_IRQn, 6);		NVIC_EnableIRQ(SPI6_IRQn);		return true;
-#endif
-};
-	return false;
-
-}
-
-bool SpiMaster8Bit::initSpi ( const uint32_t prioInterruptDmaRx ) {
+bool SpiMaster8Bit::initSpi ( void ) {
 	HAL_SPI_DeInit( &this->spi );
 
 	HAL_StatusTypeDef r;
@@ -337,7 +302,6 @@ bool SpiMaster8Bit::initSpi ( const uint32_t prioInterruptDmaRx ) {
 		dmaClkOn( this->spi.hdmarx->Instance );
 		r = HAL_DMA_Init( &this->dmaRx );
 		if ( r != HAL_OK ) return false;
-		dmaIrqOn( this->spi.hdmarx->Instance, prioInterruptDmaRx );
 	}
 
 	if ( this->cs != nullptr )

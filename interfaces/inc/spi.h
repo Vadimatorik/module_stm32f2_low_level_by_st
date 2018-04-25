@@ -24,9 +24,6 @@ struct SpiMaster8BitCfg {
 	DMA_Stream_TypeDef*			dmaRx;							/// Из мерии DMAx_Streamx.
 	uint32_t					dmaTxCh;						/// Из серии DMA_CHANNEL_x.
 	uint32_t					dmaRxCh;						/// Из серии DMA_CHANNEL_x.
-
-	uint8_t						handlerReseivePrio;				/// 1, 2..15.
-
 };
 
 class SpiMaster8Bit : public SpiMaster8BitBase {
@@ -60,12 +57,11 @@ public:
 
 
 	void	giveSemaphore			( void );			// Отдать симафор из прерывания (внутренняя функция.
-	void	reseiveByteHandler		( void );
+	void	irqHandler		( void );
 
 private:
 	bool	initClkSpi		( void );											// Включаем тактирование SPI и DMA (если используется).
-	bool	initSpi			( const uint32_t prioInterruptDmaRx );				// Инициализируем только SPI (считается, что он уже затактирован).
-	bool	initSpiIrq		( void );											// Включаем нужные прерывания (по SPI (если нет DMA) иначе DMA).
+	bool	initSpi			( void );											// Инициализируем только SPI (считается, что он уже затактирован).
 
 	const SpiMaster8BitCfg*					const cfg;
 	const uint32_t							countCfg;

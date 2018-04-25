@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef __cplusplus
 
 #include "mc_hardware_interfaces_adc.h"
