@@ -163,10 +163,6 @@ TimPwmOneChannel::TimPwmOneChannel ( const timPwmOneChannelCfg* const cfg ) : cf
 	this->tim.Init.ClockDivision			= TIM_CLOCKDIVISION_DIV1;
 	this->tim.Init.CounterMode				= TIM_COUNTERMODE_UP;
 
-	/// reinit настраивает эти параметры.
-	this->tim.Init.Period					= 0;
-	this->tim.Init.Prescaler				= 0;
-
 	this->timCh.OCMode						= TIM_OCMODE_PWM2;
 	this->timCh.OCPolarity					= this->cfg->polarity;
 }
@@ -218,10 +214,6 @@ TimInterrupt::TimInterrupt( const timInterruptCfg* const cfg ) : cfg( cfg ) {
 	this->tim.Init.AutoReloadPreload		= TIM_AUTORELOAD_PRELOAD_ENABLE;
 	this->tim.Init.ClockDivision			= TIM_CLOCKDIVISION_DIV1;
 	this->tim.Init.CounterMode				= TIM_COUNTERMODE_UP;
-
-	/// reinit настраивает эти параметры.
-	this->tim.Init.Period					= 0;
-	this->tim.Init.Prescaler				= 0;
 }
 
 BASE_RESULT TimInterrupt::reinit ( uint32_t numberCfg ) {
