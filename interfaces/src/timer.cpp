@@ -238,6 +238,7 @@ BASE_RESULT TimInterrupt::on ( void ) {
 	if ( this->tim.State == HAL_TIM_STATE_RESET )
 		return BASE_RESULT::ERROR_INIT;
 
+	this->tim.Instance->CNT = 0;
 	HAL_TIM_Base_Start_IT( &this->tim );
 
 	return BASE_RESULT::OK;
