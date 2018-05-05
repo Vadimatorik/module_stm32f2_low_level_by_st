@@ -249,5 +249,5 @@ void TimInterrupt::off ( void ) {
 }
 
 void TimInterrupt::clearInterruptFlag ( void ) {
-	HAL_TIM_IRQHandler( &this->tim );
+	this->tim.Instance->SR = 0;
 }
