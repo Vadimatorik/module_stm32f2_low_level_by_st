@@ -33,6 +33,8 @@ Uart::Uart( const uartCfg* const cfg ) : cfg(cfg) {
 
     this->m = USER_OS_STATIC_MUTEX_CREATE( &this->mb );
     this->s = USER_OS_STATIC_BIN_SEMAPHORE_CREATE( &this->sb );
+
+    if ( this->cfg->de != nullptr )    	this->cfg->de->reset();
 }
 
 bool Uart::reinit ( void ) const {
@@ -62,6 +64,7 @@ void Uart::off ( void ) const {
 
 BASE_RESULT Uart::tx ( const uint8_t* const  p_array_tx, const uint16_t& length, const uint32_t& timeout_ms ) const {
     if ( this->m != nullptr)			USER_OS_TAKE_MUTEX( this->m, portMAX_DELAY );
+    if ( this->cfg->de != nullptr )    	this->cfg->de->set();
 
 	USER_OS_TAKE_BIN_SEMAPHORE ( this->s, 0 );
 
@@ -77,6 +80,8 @@ BASE_RESULT Uart::tx ( const uint8_t* const  p_array_tx, const uint16_t& length,
 	}
 
     if ( this->m != nullptr)				USER_OS_GIVE_MUTEX( this->m );
+
+    if ( this->cfg->de != nullptr )    		this->cfg->de->reset();
 	return rv;
 }
 
